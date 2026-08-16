@@ -138,6 +138,19 @@ async function initDatabase() {
       )
     `);
 
+    // Users
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'Admin',
+        phone TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Orders
     await dbRun(`
       CREATE TABLE IF NOT EXISTS orders (
@@ -219,9 +232,54 @@ async function seedInitialData() {
     `);
     console.log('Sample seed products created.');
   }
+
+  const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
+  if (userCount.count === 0) {
+    await dbRun(`
+      INSERT INTO users (name, email, password, role, phone) VALUES 
+      ('System Super Admin', 'admin@avocado.com', 'admin123', 'Super Admin', '+1 555-0100'),
+      ('Inventory Manager', 'manager@avocado.com', 'manager123', 'Manager', '+1 555-0101'),
+      ('Client Portal User', 'client@avocado.com', 'client123', 'Client', '+1 555-0102'),
+      ('Inventory Staff Clerk', 'staff@avocado.com', 'staff123', 'Staff', '+1 555-0103')
+    `);
+    console.log('Sample user accounts created.');
+  }
 }
 
 // --- API ENDPOINTS ---
+
+// Auth Login Endpoint
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const user = await dbGet(
+      'SELECT id, name, email, role, phone, created_at FROM users WHERE email = ? AND password = ?',
+      [email.trim().toLowerCase(), password]
+    );
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    res.json({ message: 'Login successful', user, token: 'jwt_token_demo_' + user.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Users Endpoint
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await dbAll('SELECT id, name, email, role, phone, created_at FROM users ORDER BY id ASC');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // File Upload Endpoint
 app.post('/api/upload', upload.single('image'), (req, res) => {
