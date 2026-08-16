@@ -211,9 +211,9 @@ function setupSKUGenerator() {
   genButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      const skuInput = document.querySelector('input[name="sku"], .sku-input, input[placeholder*="SKU"]');
+      const skuInput = document.querySelector('input[name="sku"], .sku-input, input[placeholder*="SKU"], input[placeholder*="sku"]');
       if (skuInput) {
-        const randomCode = 'AVO-' + Math.floor(100000 + Math.random() * 900000).toString(16).toUpperCase();
+        const randomCode = 'AVO-' + Math.floor(1000 + Math.random() * 9000).toString();
         skuInput.value = randomCode;
         skuInput.classList.remove('is-invalid', 'border-danger');
         const feedback = skuInput.parentNode.querySelector('.invalid-feedback-custom');
@@ -226,11 +226,11 @@ function setupSKUGenerator() {
 
 // Setup Barcode Generator Button Handler
 function setupBarcodeGenerator() {
-  const barcodeButtons = document.querySelectorAll('.generate-barcode-btn');
+  const barcodeButtons = document.querySelectorAll('.generate-barcode-btn, .btn-primaryadd');
   barcodeButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      const barcodeInput = document.querySelector('input[name="barcode"], .barcode-input, input[placeholder*="barcode"]');
+      const barcodeInput = document.querySelector('input[name="barcode"], .barcode-input, input[placeholder*="barcode"], input[placeholder*="Barcode"]');
       if (barcodeInput) {
         const randomBarcode = '890' + Math.floor(100000000 + Math.random() * 900000000).toString();
         barcodeInput.value = randomBarcode;
@@ -1313,10 +1313,174 @@ async function initUserManagementPage() {
   await loadUsers();
 }
 
+/** Products Catalog List Controller & Real-Time Filter Engine **/
+async function initProductsListPage() {
+  console.log('Initializing Products Catalog Controller & Realtime Filters...');
+
+  const tableBody = document.querySelector('table.datatable tbody, table tbody');
+  if (!tableBody) return;
+
+  try {
+    const products = await API.getProducts();
+    let currentSearch = '';
+    let currentCategory = '';
+    let currentBrand = '';
+    let currentSort = 'recent';
+
+    function renderProducts(items) {
+      if (!items || items.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted"><i class="ti ti-box-off fs-24 d-block mb-1 text-danger"></i>No products found matching active filters</td></tr>';
+        return;
+      }
+
+      let html = '';
+      items.forEach(p => {
+        html += `
+          <tr data-product-id="${p.id}">
+            <td>
+              <label class="checkboxs">
+                <input type="checkbox" value="${p.id}">
+                <span class="checkmarks"></span>
+              </label>
+            </td>
+            <td><code class="text-success fw-bold">${p.sku || 'N/A'}</code></td>
+            <td>
+              <div class="d-flex align-items-center">
+                <a href="product-details.html?id=${p.id}" class="avatar avatar-md me-2">
+                  <img src="${p.image_url}" alt="${p.name}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+                </a>
+                <a href="product-details.html?id=${p.id}" class="fw-bold text-dark text-decoration-none">${p.name}</a>
+              </div>
+            </td>
+            <td><span class="badge bg-light text-dark border">${p.category_name || 'General'}</span></td>
+            <td><span class="badge bg-light text-primary border">${p.brand_name || 'Standard'}</span></td>
+            <td class="fw-bold text-success">$${parseFloat(p.price).toFixed(2)}</td>
+            <td>${p.unit || 'pc'}</td>
+            <td><span class="badge ${p.quantity <= p.min_quantity ? 'bg-danger' : 'bg-success'} fs-12">${p.quantity}</span></td>
+            <td><span class="fs-12 text-muted">System</span></td>
+            <td class="action-table-data">
+              <div class="edit-delete-action d-flex gap-2">
+                <a class="me-2 edit-icon p-2" href="product-details.html?id=${p.id}" title="View Details">
+                  <i class="ti ti-eye"></i>
+                </a>
+                <a class="me-2 p-2" href="edit-product.html?id=${p.id}" title="Edit Product">
+                  <i class="ti ti-edit"></i>
+                </a>
+                <button type="button" class="btn btn-sm text-danger p-2 border-0 bg-transparent delete-prod-btn" data-id="${p.id}" title="Delete Product">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableBody.innerHTML = html;
+
+      tableBody.querySelectorAll('.delete-prod-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const pId = btn.getAttribute('data-id');
+          if (confirm('Are you sure you want to delete this product?')) {
+            try {
+              await API.deleteProduct(pId);
+              API.showToast('Product deleted successfully');
+              initProductsListPage();
+            } catch (err) {
+              API.showToast('Failed to delete product', 'danger');
+            }
+          }
+        });
+      });
+    }
+
+    function applyFilters() {
+      let filtered = [...products];
+
+      if (currentSearch) {
+        filtered = filtered.filter(p => 
+          (p.name && p.name.toLowerCase().includes(currentSearch)) || 
+          (p.sku && p.sku.toLowerCase().includes(currentSearch)) ||
+          (p.category_name && p.category_name.toLowerCase().includes(currentSearch)) ||
+          (p.brand_name && p.brand_name.toLowerCase().includes(currentSearch))
+        );
+      }
+
+      if (currentCategory && currentCategory !== 'all') {
+        filtered = filtered.filter(p => p.category_name && p.category_name.toLowerCase() === currentCategory.toLowerCase());
+      }
+
+      if (currentBrand && currentBrand !== 'all') {
+        filtered = filtered.filter(p => p.brand_name && p.brand_name.toLowerCase() === currentBrand.toLowerCase());
+      }
+
+      if (currentSort === 'asc') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (currentSort === 'desc') {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (currentSort === 'name_asc') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (currentSort === 'name_desc') {
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+      } else {
+        filtered.sort((a, b) => b.id - a.id);
+      }
+
+      renderProducts(filtered);
+    }
+
+    // Initial render
+    applyFilters();
+
+    // Attach Search Input Handlers
+    const searchInputs = document.querySelectorAll('.table-top input, input[placeholder*="Search"], input[type="search"], .search-set input');
+    searchInputs.forEach(input => {
+      input.addEventListener('input', (e) => {
+        currentSearch = e.target.value.toLowerCase().trim();
+        applyFilters();
+      });
+    });
+
+    // Attach Category, Brand, and Sort Dropdown Handlers
+    document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const text = item.textContent.trim();
+        const parentBtn = item.closest('.dropdown')?.querySelector('.dropdown-toggle');
+        
+        if (parentBtn) {
+          const btnText = parentBtn.textContent.trim().toLowerCase();
+
+          if (btnText.includes('category')) {
+            currentCategory = text.toLowerCase() === 'all' ? '' : text;
+            parentBtn.innerHTML = `<i class="ti ti-filter me-1"></i> Category: ${text}`;
+            applyFilters();
+          } else if (btnText.includes('brand')) {
+            currentBrand = text.toLowerCase() === 'all' ? '' : text;
+            parentBtn.innerHTML = `<i class="ti ti-tags me-1"></i> Brand: ${text}`;
+            applyFilters();
+          } else if (btnText.includes('sort')) {
+            if (text.toLowerCase().includes('ascending') || text.toLowerCase().includes('low')) currentSort = 'asc';
+            else if (text.toLowerCase().includes('descending') || text.toLowerCase().includes('high')) currentSort = 'desc';
+            else currentSort = 'recent';
+
+            parentBtn.innerHTML = `<i class="ti ti-arrows-sort me-1"></i> Sort: ${text}`;
+            applyFilters();
+          }
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error('Failed to load products list:', err);
+  }
+}
+
 // Auto-run header store dropdown controller & page initializers on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
   setupHeaderStoreDropdown();
   if (window.location.pathname.includes('users.html')) {
     initUserManagementPage();
+  } else if (window.location.pathname.includes('products.html') || window.location.pathname.includes('product-list.html')) {
+    initProductsListPage();
   }
 });
