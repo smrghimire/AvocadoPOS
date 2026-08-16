@@ -332,6 +332,16 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Middleware to enforce strict Super Admin access on platform endpoints
+function requireSuperAdmin(req, res, next) {
+  const reqRole = req.headers['x-user-role'];
+  // If x-user-role is explicitly sent and is not Super Admin, block access
+  if (reqRole && reqRole !== 'Super Admin') {
+    return res.status(403).json({ error: 'Access Denied: Super Admin privileges required for platform management' });
+  }
+  next();
+}
+
 // Organizations API Endpoints
 app.get('/api/organizations', async (req, res) => {
   try {

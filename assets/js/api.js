@@ -976,19 +976,72 @@ async function initDashboardPage() {
     const heroTitle = document.getElementById('hero-welcome-title');
     const heroDesc = document.getElementById('hero-welcome-desc');
     const heroAddBtn = document.getElementById('hero-add-product-btn');
-    if (superBtn) superBtn.classList.remove('d-none');
-    if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-success"></span> 👑 Super Admin (Avocado Inventory)';
-    if (noticeEl) noticeEl.textContent = 'All Inventory & Management Modules Enabled';
+    const superBtn = document.getElementById('superadmin-top-btn');
+    const orgSwitcherWrapper = document.getElementById('superadmin-org-switcher-wrapper');
 
-    // Show All App Tiles on Launchpad
+    if (userTitle && userName) userTitle.textContent = userName;
+
+    if (role === 'Super Admin') {
+      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-danger"></span> 👑 Platform Super Admin';
+      if (noticeEl) noticeEl.textContent = 'Showing all platform governance & tenant modules for Super Admin';
+      if (userTitle) userTitle.textContent = userName || 'System Super Admin';
+      if (heroTitle) heroTitle.textContent = 'Super Admin Control Panel 👑';
+      if (heroDesc) heroDesc.textContent = 'Platform level access to all organizations, users, and module controls.';
+      if (superBtn) superBtn.classList.remove('d-none');
+      if (orgSwitcherWrapper) orgSwitcherWrapper.classList.remove('d-none');
+    } else {
+      if (superBtn) superBtn.classList.add('d-none');
+      if (orgSwitcherWrapper) orgSwitcherWrapper.classList.add('d-none');
+
+      if (role === 'Admin') {
+        if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-success"></span> 🛡️ Org Admin (${orgName || 'Tenant Org'})`;
+        if (noticeEl) noticeEl.textContent = `Showing all 12 management modules for ${orgName || 'Tenant Org'}`;
+        if (heroTitle) heroTitle.textContent = `Welcome to ${orgName || 'Avocado Inventory'} 👋`;
+        if (heroDesc) heroDesc.textContent = 'Enterprise Inventory Management & Stock Control System.';
+      } else if (role === 'Manager') {
+        if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-info"></span> 👔 Inventory Manager (${orgName || 'Tenant Org'})`;
+        if (noticeEl) noticeEl.textContent = `Showing 9 operational modules for ${orgName || 'Tenant Org'} (User Mgmt & Settings Hidden)`;
+        if (heroTitle) heroTitle.textContent = 'Inventory Operations Workspace 👔';
+        if (heroDesc) heroDesc.textContent = 'Operational stock adjustments, catalog management, and supplier procurement.';
+      } else if (role === 'Staff') {
+        if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-secondary"></span> 📦 Stock Staff (${orgName || 'Tenant Org'})`;
+        if (noticeEl) noticeEl.textContent = `Showing 4 task modules for ${orgName || 'Tenant Org'}`;
+        if (heroTitle) heroTitle.textContent = 'Stock Staff Task Portal 📦';
+        if (heroDesc) heroDesc.textContent = 'Quick access to stock counts, barcode generators, and inventory lookups.';
+      }
+    }
+
+    // Filter App Tiles on Launchpad
     document.querySelectorAll('.os-app-tile').forEach(tile => {
-      tile.classList.remove('d-none');
-      tile.style.display = 'flex';
-    });
+      const scope = tile.getAttribute('data-role-scope');
+      const isSuperOnly = tile.classList.contains('role-superadmin-only');
 
-    // Show All Dock Items
-    document.querySelectorAll('.dock-admin-manager, .dock-admin-only').forEach(item => {
-      item.style.display = 'flex';
+      if (role === 'Super Admin') {
+        tile.classList.remove('d-none');
+        tile.style.display = 'flex';
+      } else if (isSuperOnly || scope === 'superadmin') {
+        tile.classList.add('d-none');
+        tile.style.setProperty('display', 'none', 'important');
+      } else if (role === 'Admin') {
+        tile.classList.remove('d-none');
+        tile.style.display = 'flex';
+      } else if (role === 'Manager') {
+        if (scope === 'all' || scope === 'admin,manager') {
+          tile.classList.remove('d-none');
+          tile.style.display = 'flex';
+        } else {
+          tile.classList.add('d-none');
+          tile.style.setProperty('display', 'none', 'important');
+        }
+      } else if (role === 'Staff') {
+        if (scope === 'all') {
+          tile.classList.remove('d-none');
+          tile.style.display = 'flex';
+        } else {
+          tile.classList.add('d-none');
+          tile.style.setProperty('display', 'none', 'important');
+        }
+      }
     });
 
     if (heroAddBtn) {
@@ -1008,6 +1061,44 @@ async function initDashboardPage() {
   const orgName = user ? (user.org_name || 'Avocado Global') : 'Platform Global';
 
   applyRoleScope(role, userName, orgName);
+
+  // Super Admin Organization Context Switcher Handler
+  const orgSelect = document.getElementById('superadmin-org-select');
+  if (orgSelect && role === 'Super Admin') {
+    const savedOrg = localStorage.getItem('avocado_selected_org_id') || 'all';
+    orgSelect.value = savedOrg;
+
+    orgSelect.addEventListener('change', async (e) => {
+      const selectedVal = e.target.value;
+      localStorage.setItem('avocado_selected_org_id', selectedVal);
+      
+      // Update session user org_id for fetch requests
+      if (user) {
+        user.org_id = selectedVal === 'all' ? null : parseInt(selectedVal);
+        localStorage.setItem('avocado_user', JSON.stringify(user));
+      }
+
+      API.showToast(`Switched view context to ${orgSelect.options[orgSelect.selectedIndex].text}`);
+      
+      // Reload stats for selected organization context
+      try {
+        const stats = await API.getStats();
+        const revenueEls = document.querySelectorAll('.total-revenue-val');
+        revenueEls.forEach(el => el.textContent = `$${parseFloat(stats.total_revenue).toFixed(2)}`);
+
+        const orderEls = document.querySelectorAll('.order-count-val');
+        orderEls.forEach(el => el.textContent = stats.order_count);
+
+        const prodEls = document.querySelectorAll('.product-count-val');
+        prodEls.forEach(el => el.textContent = stats.product_count);
+
+        const lowStockEls = document.querySelectorAll('.low-stock-count-val');
+        lowStockEls.forEach(el => el.textContent = stats.low_stock_count);
+      } catch (err) {
+        console.error('Failed to update stats on org switch:', err);
+      }
+    });
+  }
 
   // Spotlight Search Filter
   const spotlightInput = document.getElementById('os-spotlight-input');

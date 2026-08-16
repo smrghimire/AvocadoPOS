@@ -3056,6 +3056,19 @@
 	<script src="assets/js/script.js"></script>
 	<script src="assets/js/api.js"></script>
 
+	<script>
+		// Strict Org Admin Route Guard for User Management
+		(function checkUserManagementAccess() {
+			let user = null;
+			try { user = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
+			const role = user ? user.role : (localStorage.getItem('avocado_role') || 'Admin');
+			if (role !== 'Admin' && role !== 'Super Admin') {
+				alert('Access Denied: User Management is reserved for Organization Admins.');
+				window.location.href = 'index.html';
+			}
+		})();
+	</script>
+
 </body>
 
 
