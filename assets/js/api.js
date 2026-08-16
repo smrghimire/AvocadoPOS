@@ -988,10 +988,16 @@ async function initDashboardPage() {
       if (heroTitle) heroTitle.textContent = 'Super Admin Control Panel 👑';
       if (heroDesc) heroDesc.textContent = 'Platform level access to all organizations, users, and module controls.';
       if (superBtn) superBtn.classList.remove('d-none');
-      if (orgSwitcherWrapper) orgSwitcherWrapper.classList.remove('d-none');
+      if (orgSwitcherWrapper) {
+        orgSwitcherWrapper.classList.remove('d-none');
+        orgSwitcherWrapper.classList.add('d-flex');
+      }
     } else {
       if (superBtn) superBtn.classList.add('d-none');
-      if (orgSwitcherWrapper) orgSwitcherWrapper.classList.add('d-none');
+      if (orgSwitcherWrapper) {
+        orgSwitcherWrapper.classList.remove('d-flex');
+        orgSwitcherWrapper.classList.add('d-none');
+      }
 
       if (role === 'Admin') {
         if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-success"></span> 🛡️ Org Admin (${orgName || 'Tenant Org'})`;
