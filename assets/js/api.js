@@ -122,6 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initEditProductPage();
   } else if (currentPath.includes('product-details.html')) {
     initProductDetailsPage();
+  } else if (currentPath.includes('qrcode.html')) {
+    initQRCodePage();
+  } else if (currentPath.includes('barcode.html')) {
+    initBarcodePage();
   } else if (currentPath.includes('products.html') || currentPath.includes('product-list.html')) {
     initProductsListPage();
   } else if (currentPath.includes('pos.html')) {
@@ -148,6 +152,51 @@ function setupSKUGenerator() {
         if (feedback) feedback.remove();
         API.showToast(`Auto-generated SKU: ${randomCode}`);
       }
+    });
+  });
+}
+
+// Setup Barcode Generator Button Handler
+function setupBarcodeGenerator() {
+  const barcodeButtons = document.querySelectorAll('.generate-barcode-btn');
+  barcodeButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const barcodeInput = document.querySelector('input[name="barcode"], .barcode-input, input[placeholder*="barcode"]');
+      if (barcodeInput) {
+        const randomBarcode = '890' + Math.floor(100000000 + Math.random() * 900000000).toString();
+        barcodeInput.value = randomBarcode;
+        barcodeInput.classList.remove('is-invalid', 'border-danger');
+        const feedback = barcodeInput.parentNode.querySelector('.invalid-feedback-custom');
+        if (feedback) feedback.remove();
+        API.showToast(`Auto-generated Item Barcode: ${randomBarcode}`);
+      }
+    });
+  });
+}
+
+// Setup Dynamic Subcategory Dropdown Handler
+function setupSubcategoryDropdown() {
+  const catSelects = document.querySelectorAll('select[name="category_id"], .category-select');
+  catSelects.forEach(catSelect => {
+    catSelect.addEventListener('change', () => {
+      const subCatSelects = document.querySelectorAll('select.form-select');
+      const subCatSelect = subCatSelects.length > 1 ? subCatSelects[1] : null;
+      if (!subCatSelect) return;
+
+      const subcatMap = {
+        '1': ['Fresh Produce', 'Organic Fruits', 'Vegetables', 'Leafy Greens'],
+        '2': ['Dairy & Eggs', 'Snacks & Chips', 'Oils & Condiments', 'Beverages'],
+        '3': ['Laptops & Computers', 'Accessories', 'Audio & Video', 'Smartphones']
+      };
+
+      const selectedCat = catSelect.value;
+      const options = subcatMap[selectedCat] || ['General', 'Standard', 'Premium', 'Wholesale'];
+      
+      subCatSelect.innerHTML = '<option value="">Select Sub Category</option>';
+      options.forEach(sub => {
+        subCatSelect.insertAdjacentHTML('beforeend', `<option value="${sub}">${sub}</option>`);
+      });
     });
   });
 }
@@ -224,8 +273,10 @@ function validateProductForm() {
 async function initAddProductPage() {
   console.log('Initializing Add Product Form Controller...');
 
-  // Setup SKU Auto Generator
+  // Setup SKU & Barcode Auto Generators
   setupSKUGenerator();
+  setupBarcodeGenerator();
+  setupSubcategoryDropdown();
 
   // Populate Categories & Brands Dropdowns
   try {
@@ -260,7 +311,6 @@ async function initAddProductPage() {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
 
-      // Validate required fields
       if (!validateProductForm()) {
         return;
       }
@@ -306,7 +356,6 @@ async function initAddProductPage() {
         await API.createProduct(productData);
         API.showToast('Product added successfully!');
 
-        // Immediately redirect back to products list
         setTimeout(() => {
           window.location.href = 'products.html';
         }, 1000);
@@ -324,8 +373,9 @@ async function initAddProductPage() {
 async function initEditProductPage() {
   console.log('Initializing Edit Product Controller...');
 
-  // Setup SKU Auto Generator
   setupSKUGenerator();
+  setupBarcodeGenerator();
+  setupSubcategoryDropdown();
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('id');
@@ -337,7 +387,6 @@ async function initEditProductPage() {
   }
 
   try {
-    // Populate Categories & Brands
     const categories = await API.getCategories();
     const catSelect = document.querySelector('select[name="category_id"], .category-select');
     if (catSelect) {
@@ -356,11 +405,9 @@ async function initEditProductPage() {
       });
     }
 
-    // Fetch Product Data from SQLite Database
     const product = await API.getProduct(productId);
     console.log('Editing Product Data:', product);
 
-    // Fill Form Inputs with Product Data
     const nameInput = document.querySelector('input[name="name"], input[placeholder*="Product Name"], .product-name-input');
     const skuInput = document.querySelector('input[name="sku"], input[placeholder*="SKU"], .sku-input');
     const priceInput = document.querySelector('input[name="price"], input[placeholder*="Price"], .price-input');
@@ -379,7 +426,6 @@ async function initEditProductPage() {
     if (catSelect && product.category_id) catSelect.value = product.category_id;
     if (brandSelect && product.brand_id) brandSelect.value = product.brand_id;
 
-    // Attach Save Button Click Handler
     const saveButtons = Array.from(document.querySelectorAll('a, button')).filter(el => {
       const text = el.textContent.trim().toLowerCase();
       return text === 'save product' || text === 'submit' || text === 'save' || text === 'save changes' || text === 'update';
@@ -389,7 +435,6 @@ async function initEditProductPage() {
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
 
-        // Validate required fields
         if (!validateProductForm()) {
           return;
         }
@@ -424,7 +469,6 @@ async function initEditProductPage() {
           await API.updateProduct(productId, updatedData);
           API.showToast('Product updated successfully!');
 
-          // Immediately redirect back to products.html
           setTimeout(() => {
             window.location.href = 'products.html';
           }, 1000);
@@ -440,6 +484,140 @@ async function initEditProductPage() {
   } catch (err) {
     console.error('Failed to load product for editing:', err);
     API.showToast('Failed to load product details', 'danger');
+  }
+}
+
+/** QR Code Print Page Controller **/
+async function initQRCodePage() {
+  console.log('Initializing Print QR Code Controller...');
+  try {
+    const products = await API.getProducts();
+    const tableBody = document.querySelector('.qrcode-table table tbody, table tbody');
+    const searchInput = document.querySelector('.search-form input[placeholder*="Search"]');
+
+    function renderTable(items) {
+      if (!tableBody) return;
+      if (items.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No products found matching search.</td></tr>';
+        return;
+      }
+      let html = '';
+      items.forEach(p => {
+        html += `
+          <tr data-product-id="${p.id}">
+            <td>
+              <div class="d-flex align-items-center">
+                <a href="javascript:void(0);" class="avatar avatar-md me-2">
+                  <img src="${p.image_url}" alt="${p.name}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+                </a>
+                <span class="fw-bold">${p.name}</span>
+              </div>
+            </td>
+            <td>${p.sku || 'N/A'}</td>
+            <td><code>${p.sku || 'AVO-00' + p.id}</code></td>
+            <td>REF-${1000 + p.id}</td>
+            <td>
+              <input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1">
+            </td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-outline-success print-trigger-btn">
+                <i class="ti ti-qrcode me-1"></i> Print QR Code
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tableBody.innerHTML = html;
+
+      document.querySelectorAll('.print-trigger-btn').forEach(btn => {
+        btn.addEventListener('click', () => { window.print(); });
+      });
+    }
+
+    renderTable(products);
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const filtered = products.filter(p => 
+          (p.name && p.name.toLowerCase().includes(term)) || 
+          (p.sku && p.sku.toLowerCase().includes(term))
+        );
+        renderTable(filtered);
+      });
+    }
+
+    const printActionBtns = document.querySelectorAll('a[data-bs-target="#prints-barcode"], .search-barcode-button a, button:contains("Print")');
+    printActionBtns.forEach(btn => {
+      btn.addEventListener('click', () => { window.print(); });
+    });
+
+  } catch (err) {
+    console.error('Failed to initialize QR code page:', err);
+  }
+}
+
+/** Barcode Print Page Controller **/
+async function initBarcodePage() {
+  console.log('Initializing Print Barcode Controller...');
+  try {
+    const products = await API.getProducts();
+    const tableBody = document.querySelector('.barcode-content-list table tbody, table tbody');
+    const searchInput = document.querySelector('.search-form input[placeholder*="Search"]');
+
+    function renderTable(items) {
+      if (!tableBody) return;
+      if (items.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No products found matching search.</td></tr>';
+        return;
+      }
+      let html = '';
+      items.forEach(p => {
+        html += `
+          <tr data-product-id="${p.id}">
+            <td>
+              <div class="d-flex align-items-center">
+                <a href="javascript:void(0);" class="avatar avatar-md me-2">
+                  <img src="${p.image_url}" alt="${p.name}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">
+                </a>
+                <span class="fw-bold">${p.name}</span>
+              </div>
+            </td>
+            <td>${p.sku || 'N/A'}</td>
+            <td><code>8901234567${p.id}</code></td>
+            <td>
+              <input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1">
+            </td>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-outline-primary print-trigger-btn">
+                <i class="ti ti-barcode me-1"></i> Print Barcode
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tableBody.innerHTML = html;
+
+      document.querySelectorAll('.print-trigger-btn').forEach(btn => {
+        btn.addEventListener('click', () => { window.print(); });
+      });
+    }
+
+    renderTable(products);
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const filtered = products.filter(p => 
+          (p.name && p.name.toLowerCase().includes(term)) || 
+          (p.sku && p.sku.toLowerCase().includes(term))
+        );
+        renderTable(filtered);
+      });
+    }
+
+  } catch (err) {
+    console.error('Failed to initialize Barcode page:', err);
   }
 }
 
@@ -581,7 +759,6 @@ async function initPOSPage() {
       });
       productGrid.innerHTML = gridHtml;
 
-      // Add to Cart listener
       document.querySelectorAll('.add-to-cart-btn').forEach(card => {
         card.addEventListener('click', () => {
           const product = JSON.parse(card.getAttribute('data-product'));
@@ -590,7 +767,6 @@ async function initPOSPage() {
       });
     }
 
-    // Checkout / Pay button
     const checkoutBtn = document.querySelector('.btn-checkout, .pay-btn, button:contains("Pay"), .btn-primary:contains("Submit")');
     if (checkoutBtn) {
       checkoutBtn.addEventListener('click', async () => {
@@ -676,7 +852,6 @@ function renderCart() {
 async function initDashboardPage() {
   console.log('Initializing OS Launchpad Dashboard Controller...');
 
-  // 1. Digital Clock
   function updateClock() {
     const clockEl = document.getElementById('os-digital-clock');
     if (!clockEl) return;
@@ -686,7 +861,6 @@ async function initDashboardPage() {
   updateClock();
   setInterval(updateClock, 1000);
 
-  // 2. Spotlight Search Filter
   const spotlightInput = document.getElementById('os-spotlight-input');
   if (spotlightInput) {
     spotlightInput.addEventListener('input', (e) => {
@@ -703,7 +877,6 @@ async function initDashboardPage() {
       });
     });
 
-    // Keyboard shortcut Cmd+K or Ctrl+K
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -712,7 +885,6 @@ async function initDashboardPage() {
     });
   }
 
-  // 3. Fetch Live Metrics
   try {
     const stats = await API.getStats();
 
