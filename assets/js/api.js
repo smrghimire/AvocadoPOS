@@ -1,5 +1,5 @@
 /**
- * AvocadoPOS - Front-End API Bridge & Dynamic Renderer
+ * AvocadoPOS - Front-End API Bridge & Dynamic Controllers
  */
 
 const API = {
@@ -57,7 +57,7 @@ const API = {
     }, 4000);
   },
 
-  // Products
+  // Products API
   async getProducts() { return this.request('/api/products'); },
   async getProduct(id) { return this.request(`/api/products/${id}`); },
   async createProduct(data) {
@@ -76,7 +76,7 @@ const API = {
     return this.request(`/api/products/${id}`, { method: 'DELETE' });
   },
 
-  // File Upload
+  // File Upload API
   async uploadImage(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -89,7 +89,7 @@ const API = {
     return data.url;
   },
 
-  // Categories & Brands
+  // Categories & Brands API
   async getCategories() { return this.request('/api/categories'); },
   async createCategory(data) {
     return this.request('/api/categories', { method: 'POST', body: JSON.stringify(data) });
@@ -99,7 +99,7 @@ const API = {
     return this.request('/api/brands', { method: 'POST', body: JSON.stringify(data) });
   },
 
-  // Customers & Orders
+  // Customers & Orders API
   async getCustomers() { return this.request('/api/customers'); },
   async createOrder(data) {
     return this.request('/api/orders', { method: 'POST', body: JSON.stringify(data) });
@@ -118,6 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (currentPath.includes('add-product.html')) {
     initAddProductPage();
+  } else if (currentPath.includes('edit-product.html')) {
+    initEditProductPage();
+  } else if (currentPath.includes('product-details.html')) {
+    initProductDetailsPage();
   } else if (currentPath.includes('products.html') || currentPath.includes('product-list.html')) {
     initProductsListPage();
   } else if (currentPath.includes('pos.html')) {
@@ -156,7 +160,7 @@ async function initAddProductPage() {
     console.error('Failed to load form options:', err);
   }
 
-  // Find Submit / Save Product Buttons
+  // Find Save / Submit Product Buttons
   const saveButtons = Array.from(document.querySelectorAll('a, button')).filter(el => {
     const text = el.textContent.trim().toLowerCase();
     return text === 'save product' || text === 'submit' || text === 'save';
@@ -169,7 +173,6 @@ async function initAddProductPage() {
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
       try {
-        // Collect Form Fields
         const nameInput = document.querySelector('input[name="name"], input[placeholder*="Product Name"], .product-name-input');
         const skuInput = document.querySelector('input[name="sku"], input[placeholder*="SKU"], .sku-input');
         const priceInput = document.querySelector('input[name="price"], input[placeholder*="Price"], .price-input');
@@ -178,7 +181,7 @@ async function initAddProductPage() {
         const minQtyInput = document.querySelector('input[name="min_quantity"], input[placeholder*="Min"], .min-qty-input');
         const catInput = document.querySelector('select[name="category_id"], .category-select');
         const brandInput = document.querySelector('select[name="brand_id"], .brand-select');
-        const descInput = document.querySelector('textarea, .description-input');
+        const descInput = document.querySelector('textarea[name="description"], textarea, .description-input');
         const imageFileInput = document.querySelector('input[type="file"]');
 
         const name = nameInput ? nameInput.value.trim() : '';
@@ -215,9 +218,10 @@ async function initAddProductPage() {
         await API.createProduct(productData);
         API.showToast('Product added successfully!');
 
+        // Immediately redirect back to products list
         setTimeout(() => {
           window.location.href = 'products.html';
-        }, 1200);
+        }, 1000);
 
       } catch (err) {
         API.showToast(err.message || 'Failed to save product', 'danger');
@@ -226,6 +230,159 @@ async function initAddProductPage() {
       }
     });
   });
+}
+
+/** Edit Product Page Controller **/
+async function initEditProductPage() {
+  console.log('Initializing Edit Product Controller...');
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+
+  if (!productId) {
+    API.showToast('No product ID specified', 'danger');
+    setTimeout(() => { window.location.href = 'products.html'; }, 1500);
+    return;
+  }
+
+  try {
+    // Populate Categories & Brands
+    const categories = await API.getCategories();
+    const catSelect = document.querySelector('select[name="category_id"], .category-select');
+    if (catSelect) {
+      catSelect.innerHTML = '<option value="">Select Category</option>';
+      categories.forEach(c => {
+        catSelect.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`);
+      });
+    }
+
+    const brands = await API.getBrands();
+    const brandSelect = document.querySelector('select[name="brand_id"], .brand-select');
+    if (brandSelect) {
+      brandSelect.innerHTML = '<option value="">Select Brand</option>';
+      brands.forEach(b => {
+        brandSelect.insertAdjacentHTML('beforeend', `<option value="${b.id}">${b.name}</option>`);
+      });
+    }
+
+    // Fetch Product Data from SQLite Database
+    const product = await API.getProduct(productId);
+    console.log('Editing Product Data:', product);
+
+    // Fill Form Inputs with Product Data
+    const nameInput = document.querySelector('input[name="name"], input[placeholder*="Product Name"], .product-name-input');
+    const skuInput = document.querySelector('input[name="sku"], input[placeholder*="SKU"], .sku-input');
+    const priceInput = document.querySelector('input[name="price"], input[placeholder*="Price"], .price-input');
+    const costInput = document.querySelector('input[name="cost_price"], input[placeholder*="Cost"], .cost-input');
+    const qtyInput = document.querySelector('input[name="quantity"], input[placeholder*="Quantity"], .qty-input');
+    const minQtyInput = document.querySelector('input[name="min_quantity"], input[placeholder*="Min"], .min-qty-input');
+    const descInput = document.querySelector('textarea[name="description"], textarea, .description-input');
+
+    if (nameInput) nameInput.value = product.name || '';
+    if (skuInput) skuInput.value = product.sku || '';
+    if (priceInput) priceInput.value = product.price || '';
+    if (costInput) costInput.value = product.cost_price || '';
+    if (qtyInput) qtyInput.value = product.quantity || '';
+    if (minQtyInput) minQtyInput.value = product.min_quantity || '';
+    if (descInput) descInput.value = product.description || '';
+    if (catSelect && product.category_id) catSelect.value = product.category_id;
+    if (brandSelect && product.brand_id) brandSelect.value = product.brand_id;
+
+    // Attach Save Button Click Handler
+    const saveButtons = Array.from(document.querySelectorAll('a, button')).filter(el => {
+      const text = el.textContent.trim().toLowerCase();
+      return text === 'save product' || text === 'submit' || text === 'save' || text === 'save changes' || text === 'update';
+    });
+
+    saveButtons.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        btn.classList.add('disabled');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+        try {
+          const imageFileInput = document.querySelector('input[type="file"]');
+          let imageUrl = product.image_url;
+          if (imageFileInput && imageFileInput.files && imageFileInput.files[0]) {
+            try {
+              imageUrl = await API.uploadImage(imageFileInput.files[0]);
+            } catch (uploadErr) {
+              console.warn('Image upload failed during edit', uploadErr);
+            }
+          }
+
+          const updatedData = {
+            name: nameInput ? nameInput.value.trim() : product.name,
+            sku: skuInput ? skuInput.value.trim() : product.sku,
+            category_id: catSelect && catSelect.value ? parseInt(catSelect.value) : product.category_id,
+            brand_id: brandSelect && brandSelect.value ? parseInt(brandSelect.value) : product.brand_id,
+            price: priceInput && parseFloat(priceInput.value) ? parseFloat(priceInput.value) : product.price,
+            cost_price: costInput && parseFloat(costInput.value) ? parseFloat(costInput.value) : product.cost_price,
+            quantity: qtyInput && parseInt(qtyInput.value) !== NaN ? parseInt(qtyInput.value) : product.quantity,
+            min_quantity: minQtyInput && parseInt(minQtyInput.value) !== NaN ? parseInt(minQtyInput.value) : product.min_quantity,
+            description: descInput ? descInput.value.trim() : product.description,
+            image_url: imageUrl
+          };
+
+          await API.updateProduct(productId, updatedData);
+          API.showToast('Product updated successfully!');
+
+          // Immediately redirect back to products.html
+          setTimeout(() => {
+            window.location.href = 'products.html';
+          }, 1000);
+
+        } catch (err) {
+          API.showToast(err.message || 'Failed to update product', 'danger');
+          btn.classList.remove('disabled');
+          btn.textContent = 'Save Product';
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error('Failed to load product for editing:', err);
+    API.showToast('Failed to load product details', 'danger');
+  }
+}
+
+/** Product Details Page Controller **/
+async function initProductDetailsPage() {
+  console.log('Initializing Product Details Controller...');
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id') || 1;
+
+  try {
+    const product = await API.getProduct(productId);
+    console.log('Product Details Loaded:', product);
+
+    // Update Product Name Title Elements
+    const nameEls = document.querySelectorAll('.product-bar h6:first-child, .product-name-title, h4:contains("Macbook")');
+    document.querySelectorAll('.productdetails ul.product-bar li').forEach(li => {
+      const h4 = li.querySelector('h4');
+      const h6 = li.querySelector('h6');
+      if (!h4 || !h6) return;
+      const label = h4.textContent.trim().toLowerCase();
+
+      if (label === 'product') h6.textContent = product.name;
+      else if (label === 'category') h6.textContent = product.category_name || 'General';
+      else if (label === 'brand') h6.textContent = product.brand_name || 'AvocadoPOS';
+      else if (label === 'sku') h6.textContent = product.sku || 'N/A';
+      else if (label === 'price') h6.textContent = `$${parseFloat(product.price).toFixed(2)}`;
+      else if (label === 'quantity') h6.textContent = product.quantity;
+      else if (label === 'minimum qty') h6.textContent = product.min_quantity;
+      else if (label === 'description') h6.textContent = product.description || 'No description provided.';
+    });
+
+    // Update Product Images
+    const imgEls = document.querySelectorAll('.slider-product img, .product-details-img');
+    imgEls.forEach(img => {
+      img.src = product.image_url;
+      img.alt = product.name;
+    });
+
+  } catch (err) {
+    console.error('Failed to load product details:', err);
+  }
 }
 
 /** Products List Page Controller **/
@@ -252,11 +409,11 @@ async function initProductsListPage() {
         <tr data-product-id="${p.id}">
           <td>
             <div class="product-info d-flex align-items-center">
-              <a href="product-details.html" class="product-img me-2">
+              <a href="product-details.html?id=${p.id}" class="product-img me-2">
                 <img src="${p.image_url}" alt="product" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
               </a>
               <div>
-                <h6 class="fw-bold mb-0"><a href="product-details.html">${p.name}</a></h6>
+                <h6 class="fw-bold mb-0"><a href="product-details.html?id=${p.id}">${p.name}</a></h6>
                 <small class="text-muted">SKU: ${p.sku || 'N/A'}</small>
               </div>
             </div>
@@ -268,6 +425,7 @@ async function initProductsListPage() {
           <td>${stockBadge}</td>
           <td>
             <div class="action-icon d-inline-flex">
+              <a href="product-details.html?id=${p.id}" class="me-2 p-2 text-info" title="View Details"><i class="ti ti-eye fs-18"></i></a>
               <a href="edit-product.html?id=${p.id}" class="me-2 p-2 text-primary" title="Edit"><i class="ti ti-edit fs-18"></i></a>
               <a href="javascript:void(0);" class="delete-btn p-2 text-danger" data-id="${p.id}" title="Delete"><i class="ti ti-trash fs-18"></i></a>
             </div>

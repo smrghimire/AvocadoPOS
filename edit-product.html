@@ -2451,7 +2451,7 @@
 											<div class="col-sm-6 col-12">
 												<div class="mb-3">
 													<label class="form-label">Product Name<span class="text-danger ms-1">*</span></label>
-													<input type="text" class="form-control" value="Lenovo 3rd Generation">
+													<input type="text" name="name" class="form-control product-name-input" value="">
 												</div>
 											</div>
 											<div class="col-sm-6 col-12">
@@ -2465,7 +2465,7 @@
 											<div class="col-sm-6 col-12">
 												<div class="mb-3 list position-relative">
 													<label class="form-label">SKU<span class="text-danger ms-1">*</span></label>
-													<input type="text" class="form-control list" value="LNV-IP3-8GB-256SSD-BLK">
+													<input type="text" name="sku" class="form-control list sku-input" value="">
 													<button type="submit" class="btn btn-primaryadd">
 														Generate
 													</button>
@@ -2491,16 +2491,8 @@
 															<a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#add-product-category"><i data-feather="plus-circle" class="plus-down-add"></i><span>Add
 																	New</span></a>
 														</div>
-														<select class="select">
-															<option>Select</option>
-															<option selected>Computers</option>
-															<option>Electronics</option>
-															<option>Shoe</option>
-															<option>Cosmetics</option>
-															<option>Groceries</option>
-															<option>Furniture</option>
-															<option>Bags</option>
-															<option>Phone</option>
+														<select name="category_id" class="select category-select">
+															<option value="">Select Category</option>
 														</select>
 													</div>
 												</div>
@@ -2510,14 +2502,6 @@
 														<select class="select">
 															<option>Select</option>
 															<option selected>Laptop</option>
-															<option>Desktop</option>
-															<option>Sneakers</option>
-															<option>Formals</option>
-															<option>Wearables</option>
-															<option>Speakers</option>
-															<option>Handbags</option>
-															<option>Travel</option>
-															<option>Sofa</option>
 														</select>
 													</div>
 												</div>
@@ -2530,14 +2514,8 @@
 														<div class="add-newplus">
 															<label class="form-label">Brand<span class="text-danger ms-1">*</span></label>
 														</div>
-														<select class="select">
-															<option>Select</option>	
-															<option selected>Lenevo</option>
-															<option>Beats</option>
-															<option>Nike</option>
-															<option>Apple</option>
-															<option>Amazon</option>
-															<option>Woodmart</option>
+														<select name="brand_id" class="select brand-select">
+															<option value="">Select Brand</option>
 														</select>
 													</div>
 												</div>
@@ -2634,13 +2612,13 @@
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
 															<label class="form-label">Quantity<span class="text-danger ms-1">*</span></label>
-															<input type="text" class="form-control" value="20">
+															<input type="text" name="quantity" class="form-control qty-input" value="">
 														</div>
 													</div>
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
 															<label class="form-label">Price<span class="text-danger ms-1">*</span></label>
-															<input type="text" class="form-control" value="650">
+															<input type="text" name="price" class="form-control price-input" value="">
 														</div>
 													</div>
 													<div class="col-lg-4 col-sm-6 col-12">
@@ -3237,6 +3215,7 @@
 	<!-- Custom JS -->
 	<script src="assets/plugins/flatpickr/flatpickr.min.js"></script>
 	<script src="assets/js/script.js"></script>
+	<script src="assets/js/api.js"></script>
 
 </body>
 
