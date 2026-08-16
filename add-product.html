@@ -2448,7 +2448,7 @@
 											<div class="col-sm-6 col-12">
 												<div class="mb-3">
 													<label class="form-label">Product Name<span class="text-danger ms-1">*</span></label>
-													<input type="text" class="form-control">
+													<input type="text" name="name" class="form-control product-name-input" placeholder="Enter Product Name">
 												</div>
 											</div>
 											<div class="col-sm-6 col-12">
@@ -2462,8 +2462,8 @@
 											<div class="col-sm-6 col-12">
 												<div class="mb-3 list position-relative">
 													<label class="form-label">SKU<span class="text-danger ms-1">*</span></label>
-													<input type="text" class="form-control list">
-													<button type="submit" class="btn btn-primaryadd">
+													<input type="text" name="sku" class="form-control list sku-input" placeholder="Auto-generated if empty">
+													<button type="button" class="btn btn-primaryadd">
 														Generate
 													</button>
 												</div>
@@ -2488,16 +2488,8 @@
 															<a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#add-product-category"><i data-feather="plus-circle" class="plus-down-add"></i><span>Add
 																	New</span></a>
 														</div>
-														<select class="select">
-															<option>Select</option>
-															<option>Computers</option>
-															<option>Electronics</option>
-															<option>Shoe</option>
-															<option>Cosmetics</option>
-															<option>Groceries</option>
-															<option>Furniture</option>
-															<option>Bags</option>
-															<option>Phone</option>
+														<select name="category_id" class="select category-select">
+															<option value="">Select Category</option>
 														</select>
 													</div>
 												</div>
@@ -2506,15 +2498,6 @@
 														<label class="form-label">Sub Category<span class="text-danger ms-1">*</span></label>
 														<select class="select">
 															<option>Select</option>
-															<option>Laptop</option>
-															<option>Desktop</option>
-															<option>Sneakers</option>
-															<option>Formals</option>
-															<option>Wearables</option>
-															<option>Speakers</option>
-															<option>Handbags</option>
-															<option>Travel</option>
-															<option>Sofa</option>
 														</select>
 													</div>
 												</div>
@@ -2527,14 +2510,8 @@
 														<div class="add-newplus">
 															<label class="form-label">Brand<span class="text-danger ms-1">*</span></label>
 														</div>
-														<select class="select">
-															<option>Select</option>	
-															<option>Lenevo</option>
-															<option>Beats</option>
-															<option>Nike</option>
-															<option>Apple</option>
-															<option>Amazon</option>
-															<option>Woodmart</option>
+														<select name="brand_id" class="select brand-select">
+															<option value="">Select Brand</option>
 														</select>
 													</div>
 												</div>
@@ -2586,8 +2563,7 @@
 										<div class="col-lg-12">
 											<div class="summer-description-box">
 												<label class="form-label">Description</label>
-												<div class="editor pages-editor"></div>
-												<p class="fs-14 mt-1">Maximum 60 Words</p>
+												<textarea name="description" class="form-control description-input" rows="3" placeholder="Enter product description..."></textarea>
 											</div>
 										</div>
 										<!-- /Editor -->
@@ -2631,59 +2607,25 @@
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
 															<label class="form-label">Quantity<span class="text-danger ms-1">*</span></label>
-															<input type="text" class="form-control">
+															<input type="number" name="quantity" class="form-control qty-input" placeholder="e.g. 50">
 														</div>
 													</div>
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
 															<label class="form-label">Price<span class="text-danger ms-1">*</span></label>
-															<input type="text" class="form-control">
+															<input type="number" step="0.01" name="price" class="form-control price-input" placeholder="e.g. 9.99">
 														</div>
 													</div>
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
-															<label class="form-label">Tax Type<span class="text-danger ms-1">*</span></label>
-															<select class="select">
-																<option>Select</option>
-																<option>Exclusive</option>
-																	<option>Inclusive</option>
-																</select>
-															</div>
-														</div>
-														<div class="col-lg-4 col-sm-6 col-12">
-															<div class="mb-3">
-																<label class="form-label">Tax<span class="text-danger ms-1">*</span></label>
-																<select class="select">
-																	<option>Select</option>
-																	<option>IGST (8%)</option>
-																	<option>GST (5%)</option>
-																	<option>SGST (4%)</option>
-																	<option>CGST (16%)</option>
-																<option>Gst 18%</option>
-															</select>
-														</div>
-													</div>
-									
-													<div class="col-lg-4 col-sm-6 col-12">
-														<div class="mb-3">
-															<label class="form-label">Discount Type<span class="text-danger ms-1">*</span></label>
-															<select class="select">
-																<option>Select</option>
-																<option>Percentage</option>
-																	<option>Fixed</option>
-															</select>
-														</div>
-													</div>
-													<div class="col-lg-4 col-sm-6 col-12">
-														<div class="mb-3">
-															<label class="form-label">Discount Value<span class="text-danger ms-1">*</span></label>
-															<input class="form-control" type="text">
+															<label class="form-label">Cost Price<span class="text-danger ms-1">*</span></label>
+															<input type="number" step="0.01" name="cost_price" class="form-control cost-input" placeholder="e.g. 4.50">
 														</div>
 													</div>
 													<div class="col-lg-4 col-sm-6 col-12">
 														<div class="mb-3">
 															<label class="form-label">Quantity Alert<span class="text-danger ms-1">*</span></label>
-															<input type="text" class="form-control">
+															<input type="number" name="min_quantity" class="form-control min-qty-input" placeholder="e.g. 5">
 														</div>
 													</div>
 												</div>
@@ -3190,6 +3132,7 @@
 	<!-- Custom JS -->
 	<script src="assets/plugins/flatpickr/flatpickr.min.js"></script>
 	<script src="assets/js/script.js"></script>
+	<script src="assets/js/api.js"></script>
 
 </body>
 

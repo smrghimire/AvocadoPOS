@@ -1,0 +1,25 @@
+{
+  "name": "avocadopos",
+  "version": "1.0.0",
+  "description": "AvocadoPOS - Retail POS & Inventory Management System with Express & SQLite Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "pos",
+    "inventory",
+    "retail",
+    "sqlite",
+    "express"
+  ],
+  "author": "AvocadoPOS",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.7"
+  }
+}

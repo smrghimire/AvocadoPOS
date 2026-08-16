@@ -7,8 +7,9 @@
 ehthumbs.db
 Thumbs.db
 
-# Dependencies & Logs
+# Dependencies & Local Database
 node_modules/
+database.sqlite
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
