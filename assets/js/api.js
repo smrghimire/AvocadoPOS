@@ -1476,8 +1476,25 @@ async function initProductsListPage() {
   }
 }
 
-// Auto-run header store dropdown controller & page initializers on DOMContentLoaded
+// Standalone Global Digital Clock Controller
+function startDigitalClock() {
+  const updateClock = () => {
+    const clockEls = document.querySelectorAll('#os-digital-clock, .os-clock-widget');
+    if (!clockEls.length) return;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    clockEls.forEach(el => {
+      el.innerHTML = `<i class="ti ti-clock me-1 text-success"></i> ${dateStr} ${timeStr}`;
+    });
+  };
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+// Auto-run header store dropdown controller, clock & page initializers on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
+  startDigitalClock();
   setupHeaderStoreDropdown();
   if (window.location.pathname.includes('users.html')) {
     initUserManagementPage();

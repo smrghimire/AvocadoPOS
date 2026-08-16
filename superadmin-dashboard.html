@@ -313,6 +313,32 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', async () => {
+			// Ensure Super Admin session context is set
+			let currentUser = null;
+			try { currentUser = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
+			if (!currentUser || currentUser.role !== 'Super Admin') {
+				const superUser = { id: 1, org_id: null, name: 'System Super Admin', email: 'admin@avocado.com', role: 'Super Admin', permissions: ['*'] };
+				localStorage.setItem('avocado_user', JSON.stringify(superUser));
+				localStorage.setItem('avocado_role', 'Super Admin');
+			}
+
+			// Tab Switching Engine
+			const tabBtns = document.querySelectorAll('#superadmin-tabs .nav-link');
+			tabBtns.forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					tabBtns.forEach(b => b.classList.remove('active'));
+					btn.classList.add('active');
+
+					const targetId = btn.getAttribute('data-bs-target') || btn.getAttribute('href');
+					document.querySelectorAll('#superadmin-tab-content .tab-pane').forEach(pane => {
+						pane.classList.remove('show', 'active');
+					});
+					const targetPane = document.querySelector(targetId);
+					if (targetPane) targetPane.classList.add('show', 'active');
+				});
+			});
+
 			await loadSuperAdminStats();
 			await loadOrganizations();
 			await loadUsers();
