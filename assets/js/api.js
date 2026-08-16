@@ -116,7 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initDashboardPage();
   }
 
-  if (currentPath.includes('add-product.html')) {
+  if (currentPath.includes('signin') || currentPath.includes('login')) {
+    initLoginPage();
+  } else if (currentPath.includes('add-product.html')) {
     initAddProductPage();
   } else if (currentPath.includes('edit-product.html')) {
     initEditProductPage();
@@ -138,6 +140,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+/** Sign In Login Page Controller **/
+function initLoginPage() {
+  console.log('Initializing Sign In Login Controller...');
+
+  document.querySelectorAll('.demo-login-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const email = btn.getAttribute('data-email');
+      const pass = btn.getAttribute('data-pass');
+      const emailInput = document.getElementById('login-email-input') || document.querySelector('input[type="email"], input[type="text"]');
+      const passInput = document.getElementById('login-password-input') || document.querySelector('input[type="password"]');
+      if (emailInput) emailInput.value = email;
+      if (passInput) passInput.value = pass;
+    });
+  });
+
+  const loginForm = document.querySelector('form') || document.getElementById('login-submit-btn')?.closest('form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const emailInput = document.getElementById('login-email-input') || document.querySelector('input[type="email"], input[type="text"]');
+      const passInput = document.getElementById('login-password-input') || document.querySelector('input[type="password"]');
+
+      if (!emailInput || !emailInput.value.trim() || !passInput || !passInput.value) {
+        API.showToast('Please enter your email address and password', 'danger');
+        return;
+      }
+
+      try {
+        const res = await API.request('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: emailInput.value.trim(),
+            password: passInput.value
+          })
+        });
+
+        API.showToast(`Login successful! Welcome ${res.user.name} (${res.user.role})`);
+
+        localStorage.setItem('avocado_user', JSON.stringify(res.user));
+        localStorage.setItem('avocado_role', res.user.role);
+
+        setTimeout(() => {
+          if (res.user.role === 'Super Admin') {
+            window.location.href = 'superadmin-dashboard.html';
+          } else {
+            window.location.href = 'index.html';
+          }
+        }, 800);
+
+      } catch (err) {
+        API.showToast(err.message || 'Invalid email or password', 'danger');
+      }
+    });
+  }
+}
 
 // Setup SKU Generator Button Handler
 function setupSKUGenerator() {
@@ -903,18 +962,7 @@ async function initDashboardPage() {
   setInterval(updateClock, 1000);
 
   // Role Scope & Permissions Controller
-  function applyRoleScope(role) {
-    localStorage.setItem('avocado_simulated_role', role);
-
-    // Update active state on Role Switcher Buttons
-    document.querySelectorAll('.btn-role-switch').forEach(btn => {
-      if (btn.getAttribute('data-role') === role) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-
+  function applyRoleScope(role, userName, orgName) {
     const statusBadge = document.getElementById('current-role-badge');
     const noticeEl = document.getElementById('role-scope-notice');
     const userTitle = document.getElementById('current-user-name');
@@ -923,31 +971,30 @@ async function initDashboardPage() {
     const heroAddBtn = document.getElementById('hero-add-product-btn');
     const superBtn = document.getElementById('superadmin-top-btn');
 
+    if (userTitle && userName) userTitle.textContent = userName;
+
     if (role === 'Super Admin') {
       if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-danger"></span> 👑 Platform Super Admin';
       if (noticeEl) noticeEl.textContent = 'Showing all platform governance & tenant modules for Super Admin';
-      if (userTitle) userTitle.textContent = 'System Super Admin';
+      if (userTitle) userTitle.textContent = userName || 'System Super Admin';
       if (heroTitle) heroTitle.textContent = 'Super Admin Control Panel 👑';
       if (heroDesc) heroDesc.textContent = 'Platform level access to all organizations, users, and module controls.';
       if (superBtn) superBtn.classList.remove('d-none');
     } else if (role === 'Admin') {
-      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot"></span> 🛡️ Org Admin (FreshMart Group)';
+      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot"></span> 🛡️ Org Admin (${orgName || 'Tenant Org'})`;
       if (noticeEl) noticeEl.textContent = 'Showing all 12 inventory modules for Org Admin';
-      if (userTitle) userTitle.textContent = 'FreshMart Admin';
-      if (heroTitle) heroTitle.textContent = 'Welcome to Avocado Inventory 👋';
+      if (heroTitle) heroTitle.textContent = `Welcome to ${orgName || 'Avocado Inventory'} 👋`;
       if (heroDesc) heroDesc.textContent = 'Enterprise Inventory Management & Stock Control System.';
       if (superBtn) superBtn.classList.add('d-none');
     } else if (role === 'Manager') {
-      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-info"></span> 👔 Inventory Manager (FreshMart Group)';
+      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-info"></span> 👔 Inventory Manager (${orgName || 'Tenant Org'})`;
       if (noticeEl) noticeEl.textContent = 'Showing 9 operational modules for Inventory Manager (Admin/Settings Hidden)';
-      if (userTitle) userTitle.textContent = 'FreshMart Manager';
       if (heroTitle) heroTitle.textContent = 'Inventory Operations Workspace 👔';
       if (heroDesc) heroDesc.textContent = 'Operational stock adjustments, catalog management, and supplier procurement.';
       if (superBtn) superBtn.classList.add('d-none');
     } else if (role === 'Staff') {
-      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-secondary"></span> 📦 Stock Staff (FreshMart Group)';
+      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-secondary"></span> 📦 Stock Staff (${orgName || 'Tenant Org'})`;
       if (noticeEl) noticeEl.textContent = 'Showing 4 core task modules for Stock Staff';
-      if (userTitle) userTitle.textContent = 'FreshMart Stock Staff';
       if (heroTitle) heroTitle.textContent = 'Stock Staff Task Portal 📦';
       if (heroDesc) heroDesc.textContent = 'Quick access to stock counts, barcode generators, and inventory lookups.';
       if (superBtn) superBtn.classList.add('d-none');
@@ -1002,9 +1049,17 @@ async function initDashboardPage() {
     }
   }
 
-  // Load saved logged-in user role or default to Admin
-  const savedRole = localStorage.getItem('avocado_role') || 'Admin';
-  applyRoleScope(savedRole);
+  // Retrieve real logged in user session or default
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('avocado_user') || 'null');
+  } catch(e){}
+
+  const role = user ? user.role : (localStorage.getItem('avocado_role') || 'Super Admin');
+  const userName = user ? user.name : 'System Super Admin';
+  const orgName = user ? (user.org_name || 'Avocado Global') : 'Platform Global';
+
+  applyRoleScope(role, userName, orgName);
 
   // Spotlight Search Filter
   const spotlightInput = document.getElementById('os-spotlight-input');
