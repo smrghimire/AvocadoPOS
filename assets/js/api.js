@@ -1138,7 +1138,87 @@ async function initDashboardPage() {
     const lowStockEls = document.querySelectorAll('.low-stock-count-val');
     lowStockEls.forEach(el => el.textContent = stats.low_stock_count);
 
-  } catch (err) {
-    console.error('Failed to load OS Launchpad stats:', err);
-  }
+// Universal Header Store Dropdown Controller (Strict Super Admin Isolation)
+function setupHeaderStoreDropdown() {
+  const storeDropdowns = document.querySelectorAll('.select-store-dropdown');
+  if (!storeDropdowns.length) return;
+
+  let currentUser = null;
+  try {
+    currentUser = JSON.parse(localStorage.getItem('avocado_user') || 'null');
+  } catch (e) {}
+
+  const role = currentUser ? currentUser.role : (localStorage.getItem('avocado_role') || 'Super Admin');
+  const orgName = currentUser ? (currentUser.org_name || 'Avocado Global') : 'Platform Global';
+
+  storeDropdowns.forEach(dropdown => {
+    if (role !== 'Super Admin') {
+      // STRICT ISOLATION: Hide store dropdown completely for non-Super Admin users (Org Admin, Manager, Staff)
+      dropdown.style.setProperty('display', 'none', 'important');
+      dropdown.classList.add('d-none');
+
+      // Replace with static organization badge if user-info container exists nearby
+      const parentNav = dropdown.parentElement;
+      if (parentNav && !parentNav.querySelector('.org-static-badge')) {
+        const badge = document.createElement('li');
+        badge.className = 'nav-item d-none d-md-flex align-items-center me-3 org-static-badge';
+        badge.innerHTML = `<span class="badge bg-success bg-opacity-25 text-success px-3 py-2 rounded-pill fs-12 border border-success-subtle"><i class="ti ti-building me-1"></i> ${orgName}</span>`;
+        parentNav.insertBefore(badge, dropdown);
+      }
+    } else {
+      // SUPER ADMIN ONLY: Unhide and populate real organization context switcher
+      dropdown.style.setProperty('display', 'block', 'important');
+      dropdown.classList.remove('d-none');
+
+      const nameEl = dropdown.querySelector('.user-name');
+      const savedOrgName = localStorage.getItem('avocado_selected_org_name') || 'Global View (All Orgs)';
+      if (nameEl) {
+        nameEl.textContent = savedOrgName;
+      }
+
+      const menu = dropdown.querySelector('.dropdown-menu');
+      if (menu) {
+        menu.innerHTML = `
+          <a href="javascript:void(0);" class="dropdown-item org-select-item" data-org-id="all" data-org-name="Global View (All Orgs)">
+            <img src="assets/img/store/store-01.png" alt="Store Logo" class="img-fluid"> 🌐 All Organizations (Global View)
+          </a>
+          <a href="javascript:void(0);" class="dropdown-item org-select-item" data-org-id="1" data-org-name="Avocado Global Enterprise">
+            <img src="assets/img/store/store-01.png" alt="Store Logo" class="img-fluid"> 🏢 Avocado Global Enterprise
+          </a>
+          <a href="javascript:void(0);" class="dropdown-item org-select-item" data-org-id="2" data-org-name="FreshMart Retail Group">
+            <img src="assets/img/store/store-02.png" alt="Store Logo" class="img-fluid"> 🏬 FreshMart Retail Group
+          </a>
+          <a href="javascript:void(0);" class="dropdown-item org-select-item" data-org-id="3" data-org-name="GreenGrocery Supply Co">
+            <img src="assets/img/store/store-03.png" alt="Store Logo" class="img-fluid"> 🍏 GreenGrocery Supply Co
+          </a>
+        `;
+
+        menu.querySelectorAll('.org-select-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const orgId = item.getAttribute('data-org-id');
+            const targetOrgName = item.getAttribute('data-org-name');
+
+            localStorage.setItem('avocado_selected_org_id', orgId);
+            localStorage.setItem('avocado_selected_org_name', targetOrgName);
+
+            if (currentUser) {
+              currentUser.org_id = orgId === 'all' ? null : parseInt(orgId);
+              localStorage.setItem('avocado_user', JSON.stringify(currentUser));
+            }
+
+            API.showToast(`Switched view context to ${targetOrgName}`);
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          });
+        });
+      }
+    }
+  });
 }
+
+// Auto-run header store dropdown controller on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  setupHeaderStoreDropdown();
+});
