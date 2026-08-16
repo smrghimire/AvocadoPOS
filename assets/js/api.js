@@ -1002,18 +1002,9 @@ async function initDashboardPage() {
     }
   }
 
-  // Load saved simulated role or default to Admin
-  const savedRole = localStorage.getItem('avocado_simulated_role') || 'Admin';
+  // Load saved logged-in user role or default to Admin
+  const savedRole = localStorage.getItem('avocado_role') || 'Admin';
   applyRoleScope(savedRole);
-
-  // Attach Role Switcher Listeners
-  document.querySelectorAll('.btn-role-switch').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const selectedRole = btn.getAttribute('data-role');
-      applyRoleScope(selectedRole);
-      API.showToast(`Switched view mode to ${selectedRole}`);
-    });
-  });
 
   // Spotlight Search Filter
   const spotlightInput = document.getElementById('os-spotlight-input');

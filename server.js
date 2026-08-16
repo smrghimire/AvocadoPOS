@@ -221,12 +221,17 @@ async function seedInitialData() {
     await dbRun(`
       INSERT INTO users (org_id, name, email, password, role, phone, permissions) VALUES 
       (1, 'System Super Admin', 'admin@avocado.com', 'admin123', 'Super Admin', '+1 555-0100', '["*"]'),
-      (2, 'FreshMart Admin', 'freshmart.admin@avocado.com', 'admin123', 'Admin', '+1 555-0200', '["*"]'),
+      (1, 'Avocado Enterprise Admin', 'avocado.admin@avocado.com', 'admin123', 'Admin', '+1 555-0101', '["*"]'),
+      (1, 'Avocado Enterprise Manager', 'avocado.manager@avocado.com', 'manager123', 'Manager', '+1 555-0102', '["products","add_product","stocks","alerts","barcodes"]'),
+      (1, 'Avocado Enterprise Staff', 'avocado.staff@avocado.com', 'staff123', 'Staff', '+1 555-0103', '["products","barcodes"]'),
+      (2, 'FreshMart Org Admin', 'freshmart.admin@avocado.com', 'admin123', 'Admin', '+1 555-0200', '["*"]'),
       (2, 'FreshMart Inventory Manager', 'freshmart.manager@avocado.com', 'manager123', 'Manager', '+1 555-0201', '["products","add_product","stocks","alerts","barcodes"]'),
       (2, 'FreshMart Stock Staff', 'freshmart.staff@avocado.com', 'staff123', 'Staff', '+1 555-0202', '["products","barcodes"]'),
-      (3, 'GreenGrocery Admin', 'greengrocery.admin@avocado.com', 'admin123', 'Admin', '+1 555-0300', '["*"]')
+      (3, 'GreenGrocery Org Admin', 'greengrocery.admin@avocado.com', 'admin123', 'Admin', '+1 555-0300', '["*"]'),
+      (3, 'GreenGrocery Manager', 'greengrocery.manager@avocado.com', 'manager123', 'Manager', '+1 555-0301', '["products","add_product","stocks","alerts","barcodes"]'),
+      (3, 'GreenGrocery Staff', 'greengrocery.staff@avocado.com', 'staff123', 'Staff', '+1 555-0302', '["products","barcodes"]')
     `);
-    console.log('Sample user accounts created.');
+    console.log('Full multi-tenant user accounts created.');
   }
 
   const catCount = await dbGet('SELECT COUNT(*) as count FROM categories');
