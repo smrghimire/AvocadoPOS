@@ -653,6 +653,45 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
+// Delete Organization Endpoint
+app.delete('/api/organizations/:id', async (req, res) => {
+  try {
+    const orgId = req.params.id;
+    await dbRun('DELETE FROM users WHERE org_id = ?', [orgId]);
+    await dbRun('DELETE FROM organizations WHERE id = ?', [orgId]);
+    res.json({ success: true, message: 'Organization and associated accounts deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Super Admin Platform Statistics Endpoint
+app.get('/api/superadmin/stats', async (req, res) => {
+  try {
+    const orgRow = await dbGet('SELECT COUNT(*) as total_orgs FROM organizations');
+    const userRow = await dbGet('SELECT COUNT(*) as total_users FROM users');
+    const prodRow = await dbGet('SELECT COUNT(*) as total_products FROM products');
+    const valRow = await dbGet('SELECT SUM(price * quantity) as total_valuation FROM products');
+
+    const orgs = await dbAll(`
+      SELECT o.*, COUNT(u.id) as user_count
+      FROM organizations o
+      LEFT JOIN users u ON o.id = u.org_id
+      GROUP BY o.id
+    `);
+
+    res.json({
+      total_orgs: orgRow.total_orgs || 0,
+      total_users: userRow.total_users || 0,
+      total_products: prodRow.total_products || 0,
+      total_valuation: valRow.total_valuation || 0.0,
+      organizations: orgs
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Dashboard Summary Metrics API
 app.get('/api/dashboard/stats', async (req, res) => {
   try {

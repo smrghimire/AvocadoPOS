@@ -6,8 +6,8 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Avocado Inventory - Super Admin Control Panel">
-	<title>Super Admin Control Panel - Avocado Inventory</title>
+	<meta name="description" content="Avocado Inventory - Super Admin Command Center">
+	<title>Super Admin Platform Command Center - Avocado Inventory</title>
 
 	<!-- Favicon -->
 	<link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
@@ -34,7 +34,7 @@
 				<img src="assets/img/logo.svg" alt="Avocado Logo">
 			</a>
 			<span class="os-status-badge">
-				<span class="os-status-dot"></span> 👑 Platform Super Admin
+				<span class="os-status-dot bg-danger"></span> 👑 Platform Super Admin Command Center
 			</span>
 		</div>
 
@@ -56,64 +56,170 @@
 		<div class="os-hero-banner">
 			<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 				<div>
-					<span class="badge bg-success-transparent text-success px-3 py-2 rounded-pill fs-12 mb-2 border border-success-subtle">
-						<i class="ti ti-shield-check me-1"></i> Multi-Tenant Governance
+					<span class="badge bg-danger-transparent text-danger px-3 py-2 rounded-pill fs-12 mb-2 border border-danger-subtle fw-bold">
+						<i class="ti ti-crown me-1"></i> Platform Governance Level
 					</span>
-					<h1 class="display-6 fw-bold text-white mb-2">Super Admin Control Panel 👑</h1>
-					<p class="text-white-50 fs-16 mb-0">Manage Tenant Organizations, Admin Accounts & Module Visibility Matrix.</p>
+					<h1 class="display-6 fw-bold text-white mb-2">Super Admin Platform Command Center 👑</h1>
+					<p class="text-white-50 fs-16 mb-0">Cross-Organization Analytics, User Provisioning & Module Visibility Control.</p>
 				</div>
 				<div>
-					<button class="btn btn-lg btn-success rounded-pill fw-bold shadow-lg d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addOrgModal">
-						<i class="ti ti-plus fs-20 me-2"></i> Provision New Organization
+					<button class="btn btn-lg btn-success rounded-pill fw-bold shadow-lg d-inline-flex align-items-center me-2" data-bs-toggle="modal" data-bs-target="#addOrgModal">
+						<i class="ti ti-building-plus fs-20 me-2"></i> Provision Organization
+					</button>
+					<button class="btn btn-lg btn-outline-light rounded-pill fw-semibold shadow-lg d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addUserModal">
+						<i class="ti ti-user-plus fs-20 me-2"></i> Add Platform User
 					</button>
 				</div>
 			</div>
 		</div>
 
-		<!-- Section 1: Organizations & Admins Directory -->
-		<div class="card os-glass-panel border-0 mb-4 text-white">
-			<div class="card-header bg-transparent border-bottom border-white-10 d-flex justify-content-between align-items-center">
-				<h4 class="fw-bold mb-0 text-white"><i class="ti ti-building me-2 text-success"></i> Organizations & Admin Directory</h4>
-				<span class="text-white-50 fs-14" id="org-count-label">Loading tenant organizations...</span>
+		<!-- Global Platform Metrics Grid -->
+		<div class="row g-3 mb-4">
+			<div class="col-6 col-md-3">
+				<div class="os-stat-card">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<span class="text-white-50 fs-13">Tenant Organizations</span>
+						<span class="p-2 rounded-circle bg-success bg-opacity-25 text-success"><i class="ti ti-building fs-20"></i></span>
+					</div>
+					<h2 class="fw-bold text-white mb-0" id="stat-total-orgs">0</h2>
+					<small class="text-success fs-12"><i class="ti ti-check"></i> Active Companies</small>
+				</div>
 			</div>
-			<div class="card-body p-0">
-				<div class="table-responsive">
-					<table class="table table-dark table-hover mb-0 align-middle" id="orgs-table">
-						<thead class="table-light text-dark">
-							<tr>
-								<th>ID</th>
-								<th>Organization Name</th>
-								<th>Org Code</th>
-								<th>Primary Admin</th>
-								<th>Admin Email</th>
-								<th>Users Count</th>
-								<th>Status</th>
-								<th class="text-center">Actions</th>
-							</tr>
-						</thead>
-						<tbody id="orgs-table-body">
-							<tr><td colspan="8" class="text-center py-4 text-white-50">Loading tenant organizations...</td></tr>
-						</tbody>
-					</table>
+
+			<div class="col-6 col-md-3">
+				<div class="os-stat-card">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<span class="text-white-50 fs-13">Platform User Accounts</span>
+						<span class="p-2 rounded-circle bg-info bg-opacity-25 text-info"><i class="ti ti-users fs-20"></i></span>
+					</div>
+					<h2 class="fw-bold text-white mb-0" id="stat-total-users">0</h2>
+					<small class="text-info fs-12"><i class="ti ti-user-check"></i> Admins, Managers & Staff</small>
+				</div>
+			</div>
+
+			<div class="col-6 col-md-3">
+				<div class="os-stat-card">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<span class="text-white-50 fs-13">Total SKU Products</span>
+						<span class="p-2 rounded-circle bg-warning bg-opacity-25 text-warning"><i class="ti ti-box fs-20"></i></span>
+					</div>
+					<h2 class="fw-bold text-white mb-0" id="stat-total-products">0</h2>
+					<small class="text-warning fs-12"><i class="ti ti-database"></i> SQLite Inventory</small>
+				</div>
+			</div>
+
+			<div class="col-6 col-md-3">
+				<div class="os-stat-card">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<span class="text-white-50 fs-13">Aggregate Stock Valuation</span>
+						<span class="p-2 rounded-circle bg-danger bg-opacity-25 text-danger"><i class="ti ti-currency-dollar fs-20"></i></span>
+					</div>
+					<h2 class="fw-bold text-white mb-0" id="stat-total-valuation">$0.00</h2>
+					<small class="text-danger fs-12"><i class="ti ti-chart-line"></i> Total Asset Value</small>
 				</div>
 			</div>
 		</div>
 
-		<!-- Section 2: Module Visibility Control Matrix -->
-		<div class="mb-4">
-			<h4 class="fw-bold text-white mb-3 d-flex align-items-center">
-				<i class="ti ti-toggle-left me-2 text-success"></i> Global Module Visibility Matrix
-			</h4>
-			<p class="text-white-50 mb-4">Toggle switches below to make specific modules visible or invisible for each Organization in real time.</p>
+		<!-- Navigation Tabs -->
+		<ul class="nav nav-pills mb-4 border-bottom border-white-10 pb-3 gap-2" id="superadmin-tabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active rounded-pill px-4 fw-bold" id="orgs-tab" data-bs-toggle="tab" data-bs-target="#tab-orgs" type="button" role="tab">
+					<i class="ti ti-building me-1"></i> Organizations (CRUD)
+				</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link rounded-pill px-4 fw-bold" id="users-tab" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+					<i class="ti ti-users me-1"></i> Global Users Directory
+				</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link rounded-pill px-4 fw-bold" id="matrix-tab" data-bs-toggle="tab" data-bs-target="#tab-matrix" type="button" role="tab">
+					<i class="ti ti-toggle-left me-1"></i> Module Visibility Matrix
+				</button>
+			</li>
+		</ul>
 
-			<div class="row g-4" id="module-matrix-container">
-				<div class="col-12 text-center text-white-50 py-4">Loading module control matrix...</div>
+		<!-- Tab Content -->
+		<div class="tab-content" id="superadmin-tab-content">
+			
+			<!-- Tab 1: Organizations CRUD -->
+			<div class="tab-pane fade show active" id="tab-orgs" role="tabpanel">
+				<div class="card os-glass-panel border-0 text-white">
+					<div class="card-header bg-transparent border-bottom border-white-10 d-flex justify-content-between align-items-center">
+						<h4 class="fw-bold mb-0 text-white"><i class="ti ti-building me-2 text-success"></i> Organizations & Admin Directory</h4>
+						<button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addOrgModal">
+							<i class="ti ti-plus me-1"></i> Provision New Organization
+						</button>
+					</div>
+					<div class="card-body p-0">
+						<div class="table-responsive">
+							<table class="table table-dark table-hover mb-0 align-middle">
+								<thead class="table-light text-dark">
+									<tr>
+										<th>ID</th>
+										<th>Organization Name</th>
+										<th>Code</th>
+										<th>Primary Admin</th>
+										<th>Admin Email</th>
+										<th>Users Count</th>
+										<th>Status</th>
+										<th class="text-center">Actions</th>
+									</tr>
+								</thead>
+								<tbody id="super-orgs-table-body">
+									<tr><td colspan="8" class="text-center py-4 text-white-50">Loading tenant organizations...</td></tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
 			</div>
+
+			<!-- Tab 2: Users Directory -->
+			<div class="tab-pane fade" id="tab-users" role="tabpanel">
+				<div class="card os-glass-panel border-0 text-white">
+					<div class="card-header bg-transparent border-bottom border-white-10 d-flex justify-content-between align-items-center">
+						<h4 class="fw-bold mb-0 text-white"><i class="ti ti-users me-2 text-info"></i> All Users Across Companies</h4>
+						<button class="btn btn-sm btn-info text-white rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addUserModal">
+							<i class="ti ti-user-plus me-1"></i> Add User
+						</button>
+					</div>
+					<div class="card-body p-0">
+						<div class="table-responsive">
+							<table class="table table-dark table-hover mb-0 align-middle">
+								<thead class="table-light text-dark">
+									<tr>
+										<th>ID</th>
+										<th>User Name</th>
+										<th>Email</th>
+										<th>Role</th>
+										<th>Organization</th>
+										<th>Phone</th>
+										<th>Status</th>
+										<th class="text-center">Actions</th>
+									</tr>
+								</thead>
+								<tbody id="super-users-table-body">
+									<tr><td colspan="8" class="text-center py-4 text-white-50">Loading user directory...</td></tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tab 3: Module Matrix -->
+			<div class="tab-pane fade" id="tab-matrix" role="tabpanel">
+				<div class="row g-4" id="super-matrix-container">
+					<div class="col-12 text-center text-white-50 py-4">Loading module visibility matrix...</div>
+				</div>
+			</div>
+
 		</div>
 
 	</main>
 
-	<!-- Modal: Provision New Organization -->
+	<!-- Modal: Provision Organization -->
 	<div class="modal fade" id="addOrgModal" tabindex="-1" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content bg-dark text-white border border-white-10 shadow-lg" style="background: rgba(10, 26, 14, 0.95) !important; backdrop-filter: blur(20px);">
@@ -141,13 +247,59 @@
 						</div>
 						<div class="mb-3">
 							<label class="form-label text-white-50">Admin Password *</label>
-							<input type="password" name="admin_password" class="form-control bg-dark text-white border-white-20" placeholder="Enter secure password" required>
+							<input type="password" name="admin_password" class="form-control bg-dark text-white border-white-20" placeholder="Enter password" required>
 						</div>
 					</form>
 				</div>
 				<div class="modal-footer border-top border-white-10">
 					<button type="button" class="btn btn-outline-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
 					<button type="button" class="btn btn-success rounded-pill fw-bold" id="save-org-btn">Provision Organization</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal: Add Platform User -->
+	<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content bg-dark text-white border border-white-10 shadow-lg" style="background: rgba(10, 26, 14, 0.95) !important; backdrop-filter: blur(20px);">
+				<div class="modal-header border-bottom border-white-10">
+					<h5 class="modal-title fw-bold text-white"><i class="ti ti-user-plus text-info me-2"></i> Add Platform User</h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="add-user-form">
+						<div class="mb-3">
+							<label class="form-label text-white-50">Organization *</label>
+							<select name="user_org_id" class="form-select bg-dark text-white border-white-20" id="user-org-select" required>
+								<option value="">Select Organization</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label text-white-50">Full Name *</label>
+							<input type="text" name="user_name" class="form-control bg-dark text-white border-white-20" placeholder="e.g. John Smith" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label text-white-50">Email Address *</label>
+							<input type="email" name="user_email" class="form-control bg-dark text-white border-white-20" placeholder="john@company.com" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label text-white-50">Password *</label>
+							<input type="password" name="user_password" class="form-control bg-dark text-white border-white-20" placeholder="Enter password" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label text-white-50">Assign Role *</label>
+							<select name="user_role" class="form-select bg-dark text-white border-white-20" required>
+								<option value="Manager">Manager</option>
+								<option value="Staff">Staff</option>
+								<option value="Admin">Org Admin</option>
+							</select>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer border-top border-white-10">
+					<button type="button" class="btn btn-outline-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-info text-white rounded-pill fw-bold" id="save-user-btn">Create User Account</button>
 				</div>
 			</div>
 		</div>
@@ -161,9 +313,11 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', async () => {
-			await loadSuperAdminData();
+			await loadSuperAdminStats();
+			await loadOrganizations();
+			await loadUsers();
 
-			// Provision Org Form Handler
+			// Provision Org Handler
 			const saveOrgBtn = document.getElementById('save-org-btn');
 			if (saveOrgBtn) {
 				saveOrgBtn.addEventListener('click', async () => {
@@ -184,24 +338,78 @@
 							method: 'POST',
 							body: JSON.stringify({ name, code, admin_name, admin_email, admin_password })
 						});
-						API.showToast(`Organization ${name} & Admin provisioned successfully!`);
+						API.showToast(`Organization ${name} provisioned successfully!`);
 						bootstrap.Modal.getInstance(document.getElementById('addOrgModal')).hide();
 						form.reset();
-						loadSuperAdminData();
+						loadSuperAdminStats();
+						loadOrganizations();
+						loadUsers();
 					} catch (err) {
-						API.showToast('Failed to create organization: ' + err.message, 'danger');
+						API.showToast('Failed to provision organization: ' + err.message, 'danger');
+					}
+				});
+			}
+
+			// Add User Handler
+			const saveUserBtn = document.getElementById('save-user-btn');
+			if (saveUserBtn) {
+				saveUserBtn.addEventListener('click', async () => {
+					const form = document.getElementById('add-user-form');
+					const org_id = form.querySelector('[name="user_org_id"]').value;
+					const name = form.querySelector('[name="user_name"]').value.trim();
+					const email = form.querySelector('[name="user_email"]').value.trim();
+					const password = form.querySelector('[name="user_password"]').value.trim();
+					const role = form.querySelector('[name="user_role"]').value;
+
+					if (!org_id || !name || !email || !password || !role) {
+						API.showToast('Please fill in all required user fields', 'danger');
+						return;
+					}
+
+					try {
+						await API.request('/api/users', {
+							method: 'POST',
+							body: JSON.stringify({ org_id, name, email, password, role })
+						});
+						API.showToast(`User ${name} created successfully!`);
+						bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+						form.reset();
+						loadUsers();
+						loadSuperAdminStats();
+					} catch (err) {
+						API.showToast('Failed to create user: ' + err.message, 'danger');
 					}
 				});
 			}
 		});
 
-		async function loadSuperAdminData() {
+		async function loadSuperAdminStats() {
+			try {
+				const stats = await API.request('/api/superadmin/stats');
+				document.getElementById('stat-total-orgs').textContent = stats.total_orgs;
+				document.getElementById('stat-total-users').textContent = stats.total_users;
+				document.getElementById('stat-total-products').textContent = stats.total_products;
+				document.getElementById('stat-total-valuation').textContent = `$${parseFloat(stats.total_valuation).toFixed(2)}`;
+			} catch (err) {
+				console.error('Failed to load Super Admin stats:', err);
+			}
+		}
+
+		async function loadOrganizations() {
 			try {
 				const orgs = await API.request('/api/organizations');
-				document.getElementById('org-count-label').textContent = `Total Tenant Organizations: ${orgs.length}`;
 
-				// Render Organizations Table
-				const tableBody = document.getElementById('orgs-table-body');
+				// Populate Org Dropdown for User Creation
+				const userOrgSelect = document.getElementById('user-org-select');
+				if (userOrgSelect) {
+					userOrgSelect.innerHTML = '<option value="">Select Organization</option>';
+					orgs.forEach(o => {
+						userOrgSelect.insertAdjacentHTML('beforeend', `<option value="${o.id}">${o.name} (${o.code})</option>`);
+					});
+				}
+
+				// Render Orgs Table
+				const tableBody = document.getElementById('super-orgs-table-body');
 				let rowsHtml = '';
 				orgs.forEach(o => {
 					rowsHtml += `
@@ -214,17 +422,36 @@
 							<td><span class="badge bg-info">${o.total_users} Users</span></td>
 							<td><span class="badge bg-success">${o.status}</span></td>
 							<td class="text-center">
-								<a href="#org-card-${o.id}" class="btn btn-sm btn-outline-success rounded-pill px-3">
-									<i class="ti ti-settings me-1"></i> Control Modules
-								</a>
+								<button class="btn btn-sm btn-outline-danger delete-org-btn me-1" data-id="${o.id}" data-name="${o.name}">
+									<i class="ti ti-trash"></i> Delete
+								</button>
 							</td>
 						</tr>
 					`;
 				});
 				tableBody.innerHTML = rowsHtml;
 
-				// Render Module Control Matrix Cards
-				const matrixContainer = document.getElementById('module-matrix-container');
+				// Attach Delete Org Handlers
+				document.querySelectorAll('.delete-org-btn').forEach(btn => {
+					btn.addEventListener('click', async () => {
+						const orgId = btn.getAttribute('data-id');
+						const orgName = btn.getAttribute('data-name');
+						if (confirm(`Are you sure you want to delete ${orgName} and all associated user accounts?`)) {
+							try {
+								await API.request(`/api/organizations/${orgId}`, { method: 'DELETE' });
+								API.showToast(`Organization ${orgName} deleted.`);
+								loadSuperAdminStats();
+								loadOrganizations();
+								loadUsers();
+							} catch (err) {
+								API.showToast('Failed to delete organization', 'danger');
+							}
+						}
+					});
+				});
+
+				// Render Module Matrix Cards
+				const matrixContainer = document.getElementById('super-matrix-container');
 				const allModules = [
 					{ key: 'products', title: 'Products Catalog', icon: 'ti-box', color: 'text-info' },
 					{ key: 'add_product', title: 'Add Product', icon: 'ti-circle-plus', color: 'text-warning' },
@@ -240,18 +467,18 @@
 					{ key: 'settings', title: 'System Settings', icon: 'ti-settings', color: 'text-white-50' }
 				];
 
-				let cardsHtml = '';
+				let matrixHtml = '';
 				orgs.forEach(o => {
 					let enabledList = [];
 					try { enabledList = JSON.parse(o.enabled_modules || '[]'); } catch (e) {}
 
-					cardsHtml += `
-						<div class="col-lg-6" id="org-card-${o.id}">
+					matrixHtml += `
+						<div class="col-lg-6" id="matrix-card-${o.id}">
 							<div class="card os-glass-panel border-0 text-white h-100">
 								<div class="card-header bg-transparent border-bottom border-white-10 d-flex justify-content-between align-items-center">
 									<div>
 										<h5 class="fw-bold text-white mb-0"><i class="ti ti-building text-success me-2"></i>${o.name}</h5>
-										<small class="text-white-50">Org Code: ${o.code} | Admin: ${o.admin_email || 'N/A'}</small>
+										<small class="text-white-50">Code: ${o.code} | Admin: ${o.admin_email || 'N/A'}</small>
 									</div>
 									<span class="badge bg-success-transparent text-success border border-success px-3 py-1 rounded-pill">Active Tenant</span>
 								</div>
@@ -262,19 +489,19 @@
 
 					allModules.forEach(m => {
 						const isChecked = enabledList.includes(m.key) ? 'checked' : '';
-						cardsHtml += `
+						matrixHtml += `
 							<div class="col-6 col-sm-4">
 								<div class="p-2 rounded bg-black bg-opacity-25 border border-white-10 d-flex justify-content-between align-items-center">
 									<span class="fs-13 d-flex align-items-center"><i class="ti ${m.icon} ${m.color} me-1 fs-16"></i> ${m.title}</span>
 									<div class="form-check form-switch m-0">
-										<input class="form-check-input module-toggle-switch" type="checkbox" data-org-id="${o.id}" data-module-key="${m.key}" ${isChecked} style="cursor:pointer;">
+										<input class="form-check-input matrix-toggle-switch" type="checkbox" data-org-id="${o.id}" data-module-key="${m.key}" ${isChecked} style="cursor:pointer;">
 									</div>
 								</div>
 							</div>
 						`;
 					});
 
-					cardsHtml += `
+					matrixHtml += `
 									</div>
 								</div>
 							</div>
@@ -282,20 +509,20 @@
 					`;
 				});
 
-				matrixContainer.innerHTML = cardsHtml;
+				matrixContainer.innerHTML = matrixHtml;
 
-				// Attach Module Toggle Switch Listeners
-				document.querySelectorAll('.module-toggle-switch').forEach(sw => {
+				// Module Toggle Switches Listener
+				document.querySelectorAll('.matrix-toggle-switch').forEach(sw => {
 					sw.addEventListener('change', async () => {
 						const orgId = sw.getAttribute('data-org-id');
-						const orgCard = document.getElementById(`org-card-${orgId}`);
-						const activeSwitches = orgCard.querySelectorAll('.module-toggle-switch:checked');
-						const newEnabledModules = Array.from(activeSwitches).map(s => s.getAttribute('data-module-key'));
+						const card = document.getElementById(`matrix-card-${orgId}`);
+						const activeSwitches = card.querySelectorAll('.matrix-toggle-switch:checked');
+						const newModules = Array.from(activeSwitches).map(s => s.getAttribute('data-module-key'));
 
 						try {
 							await API.request(`/api/organizations/${orgId}/modules`, {
 								method: 'PUT',
-								body: JSON.stringify({ enabled_modules: newEnabledModules })
+								body: JSON.stringify({ enabled_modules: newModules })
 							});
 							API.showToast('Module visibility updated for Organization!');
 						} catch (err) {
@@ -305,7 +532,65 @@
 				});
 
 			} catch (err) {
-				console.error('Super Admin Data Load Error:', err);
+				console.error('Failed to load organizations:', err);
+			}
+		}
+
+		async function loadUsers() {
+			try {
+				const users = await API.request('/api/users');
+				const tableBody = document.getElementById('super-users-table-body');
+
+				let html = '';
+				users.forEach(u => {
+					const roleBadge = u.role === 'Super Admin'
+						? '<span class="badge bg-danger-transparent text-danger fw-bold"><i class="ti ti-crown me-1"></i> Super Admin</span>'
+						: u.role === 'Admin'
+						? '<span class="badge bg-primary-transparent text-primary fw-bold">Org Admin</span>'
+						: u.role === 'Manager'
+						? '<span class="badge bg-success-transparent text-success fw-bold">Manager</span>'
+						: '<span class="badge bg-secondary-transparent text-secondary fw-bold">Staff</span>';
+
+					html += `
+						<tr>
+							<td><code>#${u.id}</code></td>
+							<td class="fw-bold text-white">${u.name}</td>
+							<td><code>${u.email}</code></td>
+							<td>${roleBadge}</td>
+							<td>${u.org_name || 'System Global'}</td>
+							<td>${u.phone || '+1 555-0199'}</td>
+							<td><span class="badge bg-success">Active</span></td>
+							<td class="text-center">
+								<button class="btn btn-sm btn-outline-danger delete-user-btn" data-id="${u.id}" data-name="${u.name}">
+									<i class="ti ti-trash"></i> Delete
+								</button>
+							</td>
+						</tr>
+					`;
+				});
+
+				tableBody.innerHTML = html;
+
+				// Attach Delete User Handlers
+				document.querySelectorAll('#super-users-table-body .delete-user-btn').forEach(btn => {
+					btn.addEventListener('click', async () => {
+						const userId = btn.getAttribute('data-id');
+						const userName = btn.getAttribute('data-name');
+						if (confirm(`Are you sure you want to delete user ${userName}?`)) {
+							try {
+								await API.request(`/api/users/${userId}`, { method: 'DELETE' });
+								API.showToast(`User ${userName} deleted.`);
+								loadUsers();
+								loadSuperAdminStats();
+							} catch (err) {
+								API.showToast('Failed to delete user', 'danger');
+							}
+						}
+					});
+				});
+
+			} catch (err) {
+				console.error('Failed to load users:', err);
 			}
 		}
 	</script>

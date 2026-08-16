@@ -207,7 +207,6 @@ function setupSubcategoryDropdown() {
 function validateProductForm() {
   let isValid = true;
 
-  // Clear previous errors
   document.querySelectorAll('.is-invalid, .border-danger').forEach(el => {
     el.classList.remove('is-invalid', 'border-danger');
   });
@@ -234,32 +233,26 @@ function validateProductForm() {
   const priceInput = document.querySelector('input[name="price"], input[placeholder*="Price"], .price-input');
   const qtyInput = document.querySelector('input[name="quantity"], input[placeholder*="Quantity"], .qty-input');
 
-  // 1. Product Name Validation
   if (!nameInput || !nameInput.value.trim()) {
     addFieldError(nameInput, 'Product Name is required *');
   }
 
-  // 2. SKU Validation
   if (skuInput && !skuInput.value.trim()) {
     skuInput.value = 'AVO-' + Math.floor(100000 + Math.random() * 900000).toString(16).toUpperCase();
   }
 
-  // 3. Category Validation
   if (!catInput || !catInput.value) {
     addFieldError(catInput, 'Please select a Category *');
   }
 
-  // 4. Brand Validation
   if (!brandInput || !brandInput.value) {
     addFieldError(brandInput, 'Please select a Brand *');
   }
 
-  // 5. Price Validation
   if (!priceInput || !priceInput.value.trim() || isNaN(parseFloat(priceInput.value)) || parseFloat(priceInput.value) <= 0) {
     addFieldError(priceInput, 'Please enter a valid Price greater than 0 *');
   }
 
-  // 6. Quantity Validation
   if (!qtyInput || !qtyInput.value.trim() || isNaN(parseInt(qtyInput.value)) || parseInt(qtyInput.value) < 0) {
     addFieldError(qtyInput, 'Please enter a valid Quantity (0 or more) *');
   }
@@ -405,7 +398,6 @@ async function initEditProductPage() {
     }
 
     const product = await API.getProduct(productId);
-    console.log('Editing Product Data:', product);
 
     const nameInput = document.querySelector('input[name="name"], input[placeholder*="Product Name"], .product-name-input');
     const skuInput = document.querySelector('input[name="sku"], input[placeholder*="SKU"], .sku-input');
@@ -552,9 +544,8 @@ async function initUsersPage() {
   }
 }
 
-/** QR Code Print Page Controller **/
+/** QR Code Print Controller **/
 async function initQRCodePage() {
-  console.log('Initializing Print QR Code Controller...');
   try {
     const products = await API.getProducts();
     const tableBody = document.querySelector('.qrcode-table table tbody, table tbody');
@@ -581,9 +572,7 @@ async function initQRCodePage() {
             <td>${p.sku || 'N/A'}</td>
             <td><code>${p.sku || 'AVO-00' + p.id}</code></td>
             <td>REF-${1000 + p.id}</td>
-            <td>
-              <input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1">
-            </td>
+            <td><input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1"></td>
             <td class="text-center">
               <button type="button" class="btn btn-sm btn-outline-success print-trigger-btn">
                 <i class="ti ti-qrcode me-1"></i> Print QR Code
@@ -612,19 +601,13 @@ async function initQRCodePage() {
       });
     }
 
-    const printActionBtns = document.querySelectorAll('a[data-bs-target="#prints-barcode"], .search-barcode-button a, button:contains("Print")');
-    printActionBtns.forEach(btn => {
-      btn.addEventListener('click', () => { window.print(); });
-    });
-
   } catch (err) {
     console.error('Failed to initialize QR code page:', err);
   }
 }
 
-/** Barcode Print Page Controller **/
+/** Barcode Print Controller **/
 async function initBarcodePage() {
-  console.log('Initializing Print Barcode Controller...');
   try {
     const products = await API.getProducts();
     const tableBody = document.querySelector('.barcode-content-list table tbody, table tbody');
@@ -650,9 +633,7 @@ async function initBarcodePage() {
             </td>
             <td>${p.sku || 'N/A'}</td>
             <td><code>8901234567${p.id}</code></td>
-            <td>
-              <input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1">
-            </td>
+            <td><input type="number" class="form-control form-control-sm w-75" value="${p.quantity || 1}" min="1"></td>
             <td class="text-center">
               <button type="button" class="btn btn-sm btn-outline-primary print-trigger-btn">
                 <i class="ti ti-barcode me-1"></i> Print Barcode
@@ -688,13 +669,11 @@ async function initBarcodePage() {
 
 /** Product Details Page Controller **/
 async function initProductDetailsPage() {
-  console.log('Initializing Product Details Controller...');
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('id') || 1;
 
   try {
     const product = await API.getProduct(productId);
-    console.log('Product Details Loaded:', product);
 
     document.querySelectorAll('.productdetails ul.product-bar li').forEach(li => {
       const h4 = li.querySelector('h4');
@@ -712,8 +691,7 @@ async function initProductDetailsPage() {
       else if (label === 'description') h6.textContent = product.description || 'No description provided.';
     });
 
-    const imgEls = document.querySelectorAll('.slider-product img, .product-details-img');
-    imgEls.forEach(img => {
+    document.querySelectorAll('.slider-product img, .product-details-img').forEach(img => {
       img.src = product.image_url;
       img.alt = product.name;
     });
@@ -725,7 +703,6 @@ async function initProductDetailsPage() {
 
 /** Products List Page Controller **/
 async function initProductsListPage() {
-  console.log('Initializing Products List Controller...');
   try {
     const products = await API.getProducts();
     const tableBody = document.querySelector('.table tbody, datatable tbody');
@@ -798,7 +775,6 @@ async function initProductsListPage() {
 let posCart = [];
 
 async function initPOSPage() {
-  console.log('Initializing POS Controller...');
   try {
     const products = await API.getProducts();
     const productGrid = document.querySelector('.pos-products-grid, .product-list, .grid-view');
@@ -916,6 +892,7 @@ function renderCart() {
 async function initDashboardPage() {
   console.log('Initializing OS Launchpad Dashboard Controller...');
 
+  // Clock
   function updateClock() {
     const clockEl = document.getElementById('os-digital-clock');
     if (!clockEl) return;
@@ -925,11 +902,125 @@ async function initDashboardPage() {
   updateClock();
   setInterval(updateClock, 1000);
 
+  // Role Scope & Permissions Controller
+  function applyRoleScope(role) {
+    localStorage.setItem('avocado_simulated_role', role);
+
+    // Update active state on Role Switcher Buttons
+    document.querySelectorAll('.btn-role-switch').forEach(btn => {
+      if (btn.getAttribute('data-role') === role) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    const statusBadge = document.getElementById('current-role-badge');
+    const noticeEl = document.getElementById('role-scope-notice');
+    const userTitle = document.getElementById('current-user-name');
+    const heroTitle = document.getElementById('hero-welcome-title');
+    const heroDesc = document.getElementById('hero-welcome-desc');
+    const heroAddBtn = document.getElementById('hero-add-product-btn');
+    const superBtn = document.getElementById('superadmin-top-btn');
+
+    if (role === 'Super Admin') {
+      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-danger"></span> 👑 Platform Super Admin';
+      if (noticeEl) noticeEl.textContent = 'Showing all platform governance & tenant modules for Super Admin';
+      if (userTitle) userTitle.textContent = 'System Super Admin';
+      if (heroTitle) heroTitle.textContent = 'Super Admin Control Panel 👑';
+      if (heroDesc) heroDesc.textContent = 'Platform level access to all organizations, users, and module controls.';
+      if (superBtn) superBtn.classList.remove('d-none');
+    } else if (role === 'Admin') {
+      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot"></span> 🛡️ Org Admin (FreshMart Group)';
+      if (noticeEl) noticeEl.textContent = 'Showing all 12 inventory modules for Org Admin';
+      if (userTitle) userTitle.textContent = 'FreshMart Admin';
+      if (heroTitle) heroTitle.textContent = 'Welcome to Avocado Inventory 👋';
+      if (heroDesc) heroDesc.textContent = 'Enterprise Inventory Management & Stock Control System.';
+      if (superBtn) superBtn.classList.add('d-none');
+    } else if (role === 'Manager') {
+      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-info"></span> 👔 Inventory Manager (FreshMart Group)';
+      if (noticeEl) noticeEl.textContent = 'Showing 9 operational modules for Inventory Manager (Admin/Settings Hidden)';
+      if (userTitle) userTitle.textContent = 'FreshMart Manager';
+      if (heroTitle) heroTitle.textContent = 'Inventory Operations Workspace 👔';
+      if (heroDesc) heroDesc.textContent = 'Operational stock adjustments, catalog management, and supplier procurement.';
+      if (superBtn) superBtn.classList.add('d-none');
+    } else if (role === 'Staff') {
+      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-secondary"></span> 📦 Stock Staff (FreshMart Group)';
+      if (noticeEl) noticeEl.textContent = 'Showing 4 core task modules for Stock Staff';
+      if (userTitle) userTitle.textContent = 'FreshMart Stock Staff';
+      if (heroTitle) heroTitle.textContent = 'Stock Staff Task Portal 📦';
+      if (heroDesc) heroDesc.textContent = 'Quick access to stock counts, barcode generators, and inventory lookups.';
+      if (superBtn) superBtn.classList.add('d-none');
+    }
+
+    // Filter App Tiles on Launchpad
+    document.querySelectorAll('.os-app-tile').forEach(tile => {
+      const scope = tile.getAttribute('data-role-scope');
+      const isSuperOnly = tile.classList.contains('role-superadmin-only');
+
+      if (role === 'Super Admin') {
+        tile.classList.remove('d-none');
+        tile.style.display = 'flex';
+      } else if (isSuperOnly) {
+        tile.classList.add('d-none');
+        tile.style.display = 'none';
+      } else if (role === 'Admin') {
+        tile.classList.remove('d-none');
+        tile.style.display = 'flex';
+      } else if (role === 'Manager') {
+        if (scope === 'all' || scope === 'admin,manager') {
+          tile.classList.remove('d-none');
+          tile.style.display = 'flex';
+        } else {
+          tile.classList.add('d-none');
+          tile.style.display = 'none';
+        }
+      } else if (role === 'Staff') {
+        if (scope === 'all') {
+          tile.classList.remove('d-none');
+          tile.style.display = 'flex';
+        } else {
+          tile.classList.add('d-none');
+          tile.style.display = 'none';
+        }
+      }
+    });
+
+    // Filter Dock Items
+    document.querySelectorAll('.dock-admin-manager').forEach(item => {
+      if (role === 'Staff') item.style.display = 'none';
+      else item.style.display = 'flex';
+    });
+    document.querySelectorAll('.dock-admin-only').forEach(item => {
+      if (role === 'Admin' || role === 'Super Admin') item.style.display = 'flex';
+      else item.style.display = 'none';
+    });
+
+    if (heroAddBtn) {
+      if (role === 'Staff') heroAddBtn.style.display = 'none';
+      else heroAddBtn.style.display = 'inline-flex';
+    }
+  }
+
+  // Load saved simulated role or default to Admin
+  const savedRole = localStorage.getItem('avocado_simulated_role') || 'Admin';
+  applyRoleScope(savedRole);
+
+  // Attach Role Switcher Listeners
+  document.querySelectorAll('.btn-role-switch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const selectedRole = btn.getAttribute('data-role');
+      applyRoleScope(selectedRole);
+      API.showToast(`Switched view mode to ${selectedRole}`);
+    });
+  });
+
+  // Spotlight Search Filter
   const spotlightInput = document.getElementById('os-spotlight-input');
   if (spotlightInput) {
     spotlightInput.addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase().trim();
-      const tiles = document.querySelectorAll('.os-app-tile');
+      const tiles = document.querySelectorAll('.os-app-tile:not(.d-none)');
       tiles.forEach(tile => {
         const keywords = tile.getAttribute('data-app-name') || '';
         const title = tile.querySelector('.os-app-title')?.textContent || '';
@@ -940,18 +1031,10 @@ async function initDashboardPage() {
         }
       });
     });
-
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        spotlightInput.focus();
-      }
-    });
   }
 
   try {
     const stats = await API.getStats();
-
     const revenueEls = document.querySelectorAll('.total-revenue-val');
     revenueEls.forEach(el => el.textContent = `$${parseFloat(stats.total_revenue).toFixed(2)}`);
 
