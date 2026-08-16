@@ -67,8 +67,35 @@ const dbGet = (sql, params = []) => new Promise((resolve, reject) => {
 
 async function initDatabase() {
   try {
-    // Enable foreign keys
     await dbRun('PRAGMA foreign_keys = ON');
+
+    // Organizations Table
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS organizations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        code TEXT UNIQUE NOT NULL,
+        status TEXT DEFAULT 'Active',
+        enabled_modules TEXT DEFAULT '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Users Table
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'Admin',
+        phone TEXT,
+        status TEXT DEFAULT 'Active',
+        permissions TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
     // Categories
     await dbRun(`
@@ -138,19 +165,6 @@ async function initDatabase() {
       )
     `);
 
-    // Users
-    await dbRun(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'Admin',
-        phone TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
     // Orders
     await dbRun(`
       CREATE TABLE IF NOT EXISTS orders (
@@ -184,12 +198,37 @@ async function initDatabase() {
 
     console.log('Database tables initialized successfully.');
     await seedInitialData();
+
   } catch (err) {
     console.error('Database initialization error:', err);
   }
 }
 
 async function seedInitialData() {
+  const orgCount = await dbGet('SELECT COUNT(*) as count FROM organizations');
+  if (orgCount.count === 0) {
+    await dbRun(`
+      INSERT INTO organizations (id, name, code, status, enabled_modules) VALUES 
+      (1, 'Avocado Global Enterprise', 'ORG-001', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]'),
+      (2, 'FreshMart Retail Group', 'ORG-002', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]'),
+      (3, 'GreenGrocery Supply Co', 'ORG-003', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","reports","settings"]')
+    `);
+    console.log('Sample organizations created.');
+  }
+
+  const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
+  if (userCount.count === 0) {
+    await dbRun(`
+      INSERT INTO users (org_id, name, email, password, role, phone, permissions) VALUES 
+      (1, 'System Super Admin', 'admin@avocado.com', 'admin123', 'Super Admin', '+1 555-0100', '["*"]'),
+      (2, 'FreshMart Admin', 'freshmart.admin@avocado.com', 'admin123', 'Admin', '+1 555-0200', '["*"]'),
+      (2, 'FreshMart Inventory Manager', 'freshmart.manager@avocado.com', 'manager123', 'Manager', '+1 555-0201', '["products","add_product","stocks","alerts","barcodes"]'),
+      (2, 'FreshMart Stock Staff', 'freshmart.staff@avocado.com', 'staff123', 'Staff', '+1 555-0202', '["products","barcodes"]'),
+      (3, 'GreenGrocery Admin', 'greengrocery.admin@avocado.com', 'admin123', 'Admin', '+1 555-0300', '["*"]')
+    `);
+    console.log('Sample user accounts created.');
+  }
+
   const catCount = await dbGet('SELECT COUNT(*) as count FROM categories');
   if (catCount.count === 0) {
     await dbRun("INSERT INTO categories (name, code, description) VALUES ('Fruits & Vegetables', 'CAT-001', 'Fresh organic fruits and veggies')");
@@ -232,18 +271,6 @@ async function seedInitialData() {
     `);
     console.log('Sample seed products created.');
   }
-
-  const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
-  if (userCount.count === 0) {
-    await dbRun(`
-      INSERT INTO users (name, email, password, role, phone) VALUES 
-      ('System Super Admin', 'admin@avocado.com', 'admin123', 'Super Admin', '+1 555-0100'),
-      ('Inventory Manager', 'manager@avocado.com', 'manager123', 'Manager', '+1 555-0101'),
-      ('Client Portal User', 'client@avocado.com', 'client123', 'Client', '+1 555-0102'),
-      ('Inventory Staff Clerk', 'staff@avocado.com', 'staff123', 'Staff', '+1 555-0103')
-    `);
-    console.log('Sample user accounts created.');
-  }
 }
 
 // --- API ENDPOINTS ---
@@ -256,10 +283,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = await dbGet(
-      'SELECT id, name, email, role, phone, created_at FROM users WHERE email = ? AND password = ?',
-      [email.trim().toLowerCase(), password]
-    );
+    const user = await dbGet(`
+      SELECT u.id, u.org_id, u.name, u.email, u.role, u.phone, u.permissions, o.name as org_name, o.code as org_code, o.enabled_modules
+      FROM users u
+      LEFT JOIN organizations o ON u.org_id = o.id
+      WHERE LOWER(u.email) = ? AND u.password = ?
+    `, [email.trim().toLowerCase(), password]);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -271,11 +300,117 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Users Endpoint
+// Organizations API Endpoints
+app.get('/api/organizations', async (req, res) => {
+  try {
+    const orgs = await dbAll(`
+      SELECT o.*, COUNT(u.id) as total_users,
+             (SELECT name FROM users WHERE org_id = o.id AND role = 'Admin' LIMIT 1) as admin_name,
+             (SELECT email FROM users WHERE org_id = o.id AND role = 'Admin' LIMIT 1) as admin_email
+      FROM organizations o
+      LEFT JOIN users u ON o.id = u.org_id
+      GROUP BY o.id
+      ORDER BY o.id ASC
+    `);
+    res.json(orgs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/organizations', async (req, res) => {
+  try {
+    const { name, code, admin_name, admin_email, admin_password, enabled_modules } = req.body;
+    if (!name || !code || !admin_email || !admin_password) {
+      return res.status(400).json({ error: 'Organization name, code, admin email and password are required' });
+    }
+
+    const modulesJson = JSON.stringify(enabled_modules || ["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]);
+    
+    const result = await dbRun(
+      'INSERT INTO organizations (name, code, enabled_modules) VALUES (?, ?, ?)',
+      [name.trim(), code.trim().toUpperCase(), modulesJson]
+    );
+    const orgId = result.lastID;
+
+    // Create Org Admin User
+    await dbRun(
+      'INSERT INTO users (org_id, name, email, password, role, permissions) VALUES (?, ?, ?, ?, ?, ?)',
+      [orgId, admin_name || (name + ' Admin'), admin_email.trim().toLowerCase(), admin_password, 'Admin', '["*"]']
+    );
+
+    const createdOrg = await dbGet('SELECT * FROM organizations WHERE id = ?', [orgId]);
+    res.status(201).json(createdOrg);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/organizations/:id/modules', async (req, res) => {
+  try {
+    const orgId = req.params.id;
+    const { enabled_modules, status } = req.body;
+    
+    const modulesJson = JSON.stringify(enabled_modules || []);
+    await dbRun(
+      'UPDATE organizations SET enabled_modules = ?, status = COALESCE(?, status) WHERE id = ?',
+      [modulesJson, status, orgId]
+    );
+
+    const updated = await dbGet('SELECT * FROM organizations WHERE id = ?', [orgId]);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Users & Roles API Endpoints
 app.get('/api/users', async (req, res) => {
   try {
-    const users = await dbAll('SELECT id, name, email, role, phone, created_at FROM users ORDER BY id ASC');
+    const { org_id } = req.query;
+    let sql = `
+      SELECT u.id, u.org_id, u.name, u.email, u.role, u.phone, u.status, u.permissions, u.created_at, o.name as org_name
+      FROM users u
+      LEFT JOIN organizations o ON u.org_id = o.id
+    `;
+    let params = [];
+    if (org_id) {
+      sql += ' WHERE u.org_id = ?';
+      params.push(org_id);
+    }
+    sql += ' ORDER BY u.id ASC';
+
+    const users = await dbAll(sql, params);
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/users', async (req, res) => {
+  try {
+    const { org_id, name, email, password, role, phone, permissions } = req.body;
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: 'Name, email, password and role are required' });
+    }
+
+    const permJson = JSON.stringify(permissions || ["products","add_product"]);
+    const result = await dbRun(
+      'INSERT INTO users (org_id, name, email, password, role, phone, permissions) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [org_id || 2, name.trim(), email.trim().toLowerCase(), password, role, phone || '', permJson]
+    );
+
+    const newUser = await dbGet('SELECT id, org_id, name, email, role, phone, permissions, created_at FROM users WHERE id = ?', [result.lastID]);
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    await dbRun('DELETE FROM users WHERE id = ?', [req.params.id]);
+    res.json({ success: true, message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -293,8 +428,8 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 // Categories
 app.get('/api/categories', async (req, res) => {
   try {
-    const rows = await dbAll('SELECT * FROM categories ORDER BY name ASC');
-    res.json(rows);
+    const categories = await dbAll('SELECT * FROM categories ORDER BY id ASC');
+    res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -304,9 +439,12 @@ app.post('/api/categories', async (req, res) => {
   try {
     const { name, code, description } = req.body;
     if (!name) return res.status(400).json({ error: 'Category name is required' });
-    const result = await dbRun('INSERT INTO categories (name, code, description) VALUES (?, ?, ?)', [name, code || '', description || '']);
-    const category = await dbGet('SELECT * FROM categories WHERE id = ?', [result.lastID]);
-    res.status(201).json(category);
+    const result = await dbRun(
+      'INSERT INTO categories (name, code, description) VALUES (?, ?, ?)',
+      [name.trim(), code ? code.trim() : null, description ? description.trim() : null]
+    );
+    const newCategory = await dbGet('SELECT * FROM categories WHERE id = ?', [result.lastID]);
+    res.status(201).json(newCategory);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -315,8 +453,8 @@ app.post('/api/categories', async (req, res) => {
 // Brands
 app.get('/api/brands', async (req, res) => {
   try {
-    const rows = await dbAll('SELECT * FROM brands ORDER BY name ASC');
-    res.json(rows);
+    const brands = await dbAll('SELECT * FROM brands ORDER BY id ASC');
+    res.json(brands);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -326,48 +464,25 @@ app.post('/api/brands', async (req, res) => {
   try {
     const { name, logo_url } = req.body;
     if (!name) return res.status(400).json({ error: 'Brand name is required' });
-    const result = await dbRun('INSERT INTO brands (name, logo_url) VALUES (?, ?)', [name, logo_url || '']);
-    const brand = await dbGet('SELECT * FROM brands WHERE id = ?', [result.lastID]);
-    res.status(201).json(brand);
+    const result = await dbRun('INSERT INTO brands (name, logo_url) VALUES (?, ?)', [name.trim(), logo_url || null]);
+    const newBrand = await dbGet('SELECT * FROM brands WHERE id = ?', [result.lastID]);
+    res.status(201).json(newBrand);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Customers
-app.get('/api/customers', async (req, res) => {
-  try {
-    const rows = await dbAll('SELECT * FROM customers ORDER BY name ASC');
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/customers', async (req, res) => {
-  try {
-    const { name, email, phone, address } = req.body;
-    if (!name) return res.status(400).json({ error: 'Customer name is required' });
-    const result = await dbRun('INSERT INTO customers (name, email, phone, address) VALUES (?, ?, ?, ?)', [name, email || '', phone || '', address || '']);
-    const customer = await dbGet('SELECT * FROM customers WHERE id = ?', [result.lastID]);
-    res.status(201).json(customer);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Products CRUD
+// Products
 app.get('/api/products', async (req, res) => {
   try {
-    const sql = `
+    const products = await dbAll(`
       SELECT p.*, c.name as category_name, b.name as brand_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN brands b ON p.brand_id = b.id
       ORDER BY p.id DESC
-    `;
-    const rows = await dbAll(sql);
-    res.json(rows);
+    `);
+    res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -375,15 +490,15 @@ app.get('/api/products', async (req, res) => {
 
 app.get('/api/products/:id', async (req, res) => {
   try {
-    const row = await dbGet(`
+    const product = await dbGet(`
       SELECT p.*, c.name as category_name, b.name as brand_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN brands b ON p.brand_id = b.id
       WHERE p.id = ?
     `, [req.params.id]);
-    if (!row) return res.status(404).json({ error: 'Product not found' });
-    res.json(row);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -391,34 +506,26 @@ app.get('/api/products/:id', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const {
-      name, sku, category_id, brand_id, price, cost_price,
-      quantity, min_quantity, unit, tax_rate, discount, description, image_url
-    } = req.body;
+    const { name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url } = req.body;
+    if (!name || price === undefined) {
+      return res.status(400).json({ error: 'Product name and price are required' });
+    }
 
-    if (!name) return res.status(400).json({ error: 'Product name is required' });
-
-    // Generate unique SKU if omitted
-    const generatedSku = sku || `SKU-${Date.now().toString().slice(-6)}`;
-
+    const generatedSku = sku || `AVO-${Math.floor(1000 + Math.random() * 9000)}`;
     const result = await dbRun(`
-      INSERT INTO products (
-        name, sku, category_id, brand_id, price, cost_price,
-        quantity, min_quantity, unit, tax_rate, discount, description, image_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      name,
+      name.trim(),
       generatedSku,
-      category_id ? parseInt(category_id) : null,
-      brand_id ? parseInt(brand_id) : null,
+      category_id || null,
+      brand_id || null,
       parseFloat(price) || 0.0,
       parseFloat(cost_price) || 0.0,
       parseInt(quantity) || 0,
       parseInt(min_quantity) || 5,
       unit || 'pc',
-      parseFloat(tax_rate) || 0.0,
-      parseFloat(discount) || 0.0,
-      description || '',
+      description || null,
       image_url || 'assets/img/products/product1.jpg'
     ]);
 
@@ -431,40 +538,40 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   try {
-    const {
-      name, sku, category_id, brand_id, price, cost_price,
-      quantity, min_quantity, unit, tax_rate, discount, description, image_url
-    } = req.body;
-
     const productId = req.params.id;
-    const existing = await dbGet('SELECT * FROM products WHERE id = ?', [productId]);
-    if (!existing) return res.status(404).json({ error: 'Product not found' });
+    const { name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url } = req.body;
 
     await dbRun(`
       UPDATE products SET
-        name = ?, sku = ?, category_id = ?, brand_id = ?, price = ?, cost_price = ?,
-        quantity = ?, min_quantity = ?, unit = ?, tax_rate = ?, discount = ?,
-        description = ?, image_url = ?
+        name = COALESCE(?, name),
+        sku = COALESCE(?, sku),
+        category_id = COALESCE(?, category_id),
+        brand_id = COALESCE(?, brand_id),
+        price = COALESCE(?, price),
+        cost_price = COALESCE(?, cost_price),
+        quantity = COALESCE(?, quantity),
+        min_quantity = COALESCE(?, min_quantity),
+        unit = COALESCE(?, unit),
+        description = COALESCE(?, description),
+        image_url = COALESCE(?, image_url)
       WHERE id = ?
     `, [
-      name !== undefined ? name : existing.name,
-      sku !== undefined ? sku : existing.sku,
-      category_id !== undefined ? category_id : existing.category_id,
-      brand_id !== undefined ? brand_id : existing.brand_id,
-      price !== undefined ? parseFloat(price) : existing.price,
-      cost_price !== undefined ? parseFloat(cost_price) : existing.cost_price,
-      quantity !== undefined ? parseInt(quantity) : existing.quantity,
-      min_quantity !== undefined ? parseInt(min_quantity) : existing.min_quantity,
-      unit !== undefined ? unit : existing.unit,
-      tax_rate !== undefined ? parseFloat(tax_rate) : existing.tax_rate,
-      discount !== undefined ? parseFloat(discount) : existing.discount,
-      description !== undefined ? description : existing.description,
-      image_url !== undefined ? image_url : existing.image_url,
+      name ? name.trim() : null,
+      sku ? sku.trim() : null,
+      category_id || null,
+      brand_id || null,
+      price !== undefined ? parseFloat(price) : null,
+      cost_price !== undefined ? parseFloat(cost_price) : null,
+      quantity !== undefined ? parseInt(quantity) : null,
+      min_quantity !== undefined ? parseInt(min_quantity) : null,
+      unit || null,
+      description !== undefined ? description : null,
+      image_url || null,
       productId
     ]);
 
-    const updated = await dbGet('SELECT * FROM products WHERE id = ?', [productId]);
-    res.json(updated);
+    const updatedProduct = await dbGet('SELECT * FROM products WHERE id = ?', [productId]);
+    res.json(updatedProduct);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -472,58 +579,49 @@ app.put('/api/products/:id', async (req, res) => {
 
 app.delete('/api/products/:id', async (req, res) => {
   try {
-    const productId = req.params.id;
-    const result = await dbRun('DELETE FROM products WHERE id = ?', [productId]);
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.json({ success: true, message: 'Product deleted successfully', id: productId });
+    await dbRun('DELETE FROM products WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Orders (POS Checkout & Sales)
-app.get('/api/orders', async (req, res) => {
+// Customers
+app.get('/api/customers', async (req, res) => {
   try {
-    const sql = `
-      SELECT o.*, c.name as customer_name
-      FROM orders o
-      LEFT JOIN customers c ON o.customer_id = c.id
-      ORDER BY o.id DESC
-    `;
-    const orders = await dbAll(sql);
-    res.json(orders);
+    const customers = await dbAll('SELECT * FROM customers ORDER BY id ASC');
+    res.json(customers);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// Suppliers
+app.get('/api/suppliers', async (req, res) => {
+  try {
+    const suppliers = await dbAll('SELECT * FROM suppliers ORDER BY id ASC');
+    res.json(suppliers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Orders & POS Checkout
 app.post('/api/orders', async (req, res) => {
   try {
-    const { customer_id, items, total_amount, discount_amount, tax_amount, payment_method } = req.body;
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Order must contain at least one item' });
+    const { customer_id, items, total_amount, payment_method } = req.body;
+    if (!items || !items.length || total_amount === undefined) {
+      return res.status(400).json({ error: 'Order items and total_amount are required' });
     }
 
-    const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+    const orderNumber = `ORD-${Date.now()}`;
+    const orderResult = await dbRun(`
+      INSERT INTO orders (order_number, customer_id, total_amount, payment_method)
+      VALUES (?, ?, ?, ?)
+    `, [orderNumber, customer_id || 1, parseFloat(total_amount), payment_method || 'Cash']);
 
-    // Insert Order
-    const orderRes = await dbRun(`
-      INSERT INTO orders (order_number, customer_id, total_amount, discount_amount, tax_amount, payment_method)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [
-      orderNumber,
-      customer_id ? parseInt(customer_id) : 1,
-      parseFloat(total_amount) || 0.0,
-      parseFloat(discount_amount) || 0.0,
-      parseFloat(tax_amount) || 0.0,
-      payment_method || 'Cash'
-    ]);
+    const orderId = orderResult.lastID;
 
-    const orderId = orderRes.lastID;
-
-    // Insert Order Items and Update Stock Quantities
     for (const item of items) {
       await dbRun(`
         INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, subtotal)
@@ -537,7 +635,6 @@ app.post('/api/orders', async (req, res) => {
         parseFloat(item.subtotal) || 0.0
       ]);
 
-      // Deduct Stock Quantity
       if (item.product_id) {
         await dbRun(`
           UPDATE products

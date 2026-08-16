@@ -126,6 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initQRCodePage();
   } else if (currentPath.includes('barcode.html')) {
     initBarcodePage();
+  } else if (currentPath.includes('users.html') || currentPath.includes('roles-permissions.html')) {
+    initUsersPage();
   } else if (currentPath.includes('products.html') || currentPath.includes('product-list.html')) {
     initProductsListPage();
   } else if (currentPath.includes('pos.html')) {
@@ -273,12 +275,10 @@ function validateProductForm() {
 async function initAddProductPage() {
   console.log('Initializing Add Product Form Controller...');
 
-  // Setup SKU & Barcode Auto Generators
   setupSKUGenerator();
   setupBarcodeGenerator();
   setupSubcategoryDropdown();
 
-  // Populate Categories & Brands Dropdowns
   try {
     const categories = await API.getCategories();
     const catSelects = document.querySelectorAll('select[name="category_id"], .category-select');
@@ -301,7 +301,6 @@ async function initAddProductPage() {
     console.error('Failed to load form options:', err);
   }
 
-  // Find Save / Submit Product Buttons
   const saveButtons = Array.from(document.querySelectorAll('a, button')).filter(el => {
     const text = el.textContent.trim().toLowerCase();
     return text === 'save product' || text === 'submit' || text === 'save';
@@ -484,6 +483,72 @@ async function initEditProductPage() {
   } catch (err) {
     console.error('Failed to load product for editing:', err);
     API.showToast('Failed to load product details', 'danger');
+  }
+}
+
+/** Users & Roles Controller **/
+async function initUsersPage() {
+  console.log('Initializing Users & Roles Controller...');
+  try {
+    const users = await API.request('/api/users');
+    const tableBody = document.querySelector('.table tbody, datatable tbody');
+    if (!tableBody) return;
+
+    let html = '';
+    users.forEach(u => {
+      const roleBadge = u.role === 'Super Admin'
+        ? '<span class="badge bg-danger-transparent text-danger fw-bold"><i class="ti ti-crown me-1"></i> Super Admin</span>'
+        : u.role === 'Admin'
+        ? '<span class="badge bg-primary-transparent text-primary fw-bold">Admin</span>'
+        : u.role === 'Manager'
+        ? '<span class="badge bg-success-transparent text-success fw-bold">Manager</span>'
+        : '<span class="badge bg-secondary-transparent text-secondary fw-bold">Staff</span>';
+
+      html += `
+        <tr data-user-id="${u.id}">
+          <td>
+            <div class="d-flex align-items-center">
+              <span class="avatar avatar-md me-2 bg-success-transparent text-success rounded-circle fw-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                ${u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+              </span>
+              <div>
+                <h6 class="fw-bold mb-0">${u.name}</h6>
+                <small class="text-muted">${u.org_name || 'Avocado POS'}</small>
+              </div>
+            </div>
+          </td>
+          <td>${u.phone || '+1 555-0199'}</td>
+          <td><code>${u.email}</code></td>
+          <td>${roleBadge}</td>
+          <td><span class="badge bg-success">Active</span></td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm text-danger delete-user-btn" data-id="${u.id}" title="Delete User">
+              <i class="ti ti-trash fs-16"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tableBody.innerHTML = html;
+
+    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const userId = btn.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this user?')) {
+          try {
+            await API.request(`/api/users/${userId}`, { method: 'DELETE' });
+            API.showToast('User deleted successfully!');
+            btn.closest('tr').remove();
+          } catch (err) {
+            API.showToast('Failed to delete user', 'danger');
+          }
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error('Failed to load users list:', err);
   }
 }
 
@@ -709,7 +774,6 @@ async function initProductsListPage() {
 
     tableBody.innerHTML = rowsHtml;
 
-    // Attach Delete Action Handlers
     document.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const prodId = btn.getAttribute('data-id');
