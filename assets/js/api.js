@@ -205,43 +205,44 @@ function initLoginPage() {
   }
 }
 
+// Global Delegated Click Handler for SKU & Barcode Generation
+document.addEventListener('click', (e) => {
+  const skuBtn = e.target.closest('#generate-sku-btn, .generate-sku-btn');
+  if (skuBtn) {
+    e.preventDefault();
+    const skuInput = document.querySelector('input[name="sku"], .sku-input, input[placeholder*="SKU"], input[placeholder*="Auto-generated"]');
+    if (skuInput) {
+      const code = 'AVO-' + Math.floor(1000 + Math.random() * 9000).toString();
+      skuInput.value = code;
+      skuInput.classList.remove('is-invalid', 'border-danger');
+      const feedback = skuInput.parentNode.querySelector('.invalid-feedback-custom');
+      if (feedback) feedback.remove();
+      API.showToast(`Auto-generated SKU: ${code}`);
+    }
+    return;
+  }
+
+  const barcodeBtn = e.target.closest('#generate-barcode-btn, .generate-barcode-btn');
+  if (barcodeBtn) {
+    e.preventDefault();
+    const barcodeInput = document.querySelector('input[name="barcode"], .barcode-input, input[placeholder*="barcode"], input[placeholder*="Barcode"]');
+    if (barcodeInput) {
+      const barcode = '890' + Math.floor(100000000 + Math.random() * 900000000).toString();
+      barcodeInput.value = barcode;
+      barcodeInput.classList.remove('is-invalid', 'border-danger');
+      const feedback = barcodeInput.parentNode.querySelector('.invalid-feedback-custom');
+      if (feedback) feedback.remove();
+      API.showToast(`Auto-generated Item Barcode: ${barcode}`);
+    }
+    return;
+  }
+});
+
 // Setup SKU Generator Button Handler
-function setupSKUGenerator() {
-  const genButtons = document.querySelectorAll('.btn-primaryadd, .generate-sku-btn');
-  genButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const skuInput = document.querySelector('input[name="sku"], .sku-input, input[placeholder*="SKU"], input[placeholder*="sku"]');
-      if (skuInput) {
-        const randomCode = 'AVO-' + Math.floor(1000 + Math.random() * 9000).toString();
-        skuInput.value = randomCode;
-        skuInput.classList.remove('is-invalid', 'border-danger');
-        const feedback = skuInput.parentNode.querySelector('.invalid-feedback-custom');
-        if (feedback) feedback.remove();
-        API.showToast(`Auto-generated SKU: ${randomCode}`);
-      }
-    });
-  });
-}
+function setupSKUGenerator() {}
 
 // Setup Barcode Generator Button Handler
-function setupBarcodeGenerator() {
-  const barcodeButtons = document.querySelectorAll('.generate-barcode-btn, .btn-primaryadd');
-  barcodeButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const barcodeInput = document.querySelector('input[name="barcode"], .barcode-input, input[placeholder*="barcode"], input[placeholder*="Barcode"]');
-      if (barcodeInput) {
-        const randomBarcode = '890' + Math.floor(100000000 + Math.random() * 900000000).toString();
-        barcodeInput.value = randomBarcode;
-        barcodeInput.classList.remove('is-invalid', 'border-danger');
-        const feedback = barcodeInput.parentNode.querySelector('.invalid-feedback-custom');
-        if (feedback) feedback.remove();
-        API.showToast(`Auto-generated Item Barcode: ${randomBarcode}`);
-      }
-    });
-  });
-}
+function setupBarcodeGenerator() {}
 
 // Setup Dynamic Subcategory Dropdown Handler
 function setupSubcategoryDropdown() {
