@@ -471,6 +471,41 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { name, email, password, role, phone, permissions, status } = req.body;
+    
+    const permJson = permissions ? JSON.stringify(permissions) : null;
+
+    await dbRun(`
+      UPDATE users SET
+        name = COALESCE(?, name),
+        email = COALESCE(?, email),
+        password = COALESCE(?, password),
+        role = COALESCE(?, role),
+        phone = COALESCE(?, phone),
+        status = COALESCE(?, status),
+        permissions = COALESCE(?, permissions)
+      WHERE id = ?
+    `, [
+      name ? name.trim() : null,
+      email ? email.trim().toLowerCase() : null,
+      password || null,
+      role || null,
+      phone || null,
+      status || null,
+      permJson,
+      userId
+    ]);
+
+    const updated = await dbGet('SELECT id, org_id, name, email, role, phone, status, permissions, created_at FROM users WHERE id = ?', [userId]);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // File Upload Endpoint
 app.post('/api/upload', upload.single('image'), (req, res) => {
   if (!req.file) {

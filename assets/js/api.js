@@ -1017,8 +1017,35 @@ async function initDashboardPage() {
       }
     }
 
+    // Calculate Multi-Tier Effective User Modules
+    let effectiveModules = [];
+    if (role === 'Super Admin') {
+      effectiveModules = ['*'];
+    } else {
+      let orgModules = [];
+      try {
+        orgModules = typeof (user && user.enabled_modules) === 'string' 
+          ? JSON.parse(user.enabled_modules) 
+          : ((user && user.enabled_modules) || ["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]);
+      } catch(e){}
+
+      if (role === 'Admin') {
+        effectiveModules = orgModules;
+      } else {
+        let userPerms = [];
+        try {
+          userPerms = typeof (user && user.permissions) === 'string' 
+            ? JSON.parse(user.permissions) 
+            : ((user && user.permissions) || []);
+        } catch(e){}
+        // Intersection of org enabled modules and user delegated permissions
+        effectiveModules = userPerms.filter(m => orgModules.includes(m));
+      }
+    }
+
     // Filter App Tiles on Launchpad
     document.querySelectorAll('.os-app-tile').forEach(tile => {
+      const modKey = tile.getAttribute('data-module-key');
       const scope = tile.getAttribute('data-role-scope');
       const isSuperOnly = tile.classList.contains('role-superadmin-only');
 
@@ -1028,30 +1055,17 @@ async function initDashboardPage() {
       } else if (isSuperOnly || scope === 'superadmin') {
         tile.classList.add('d-none');
         tile.style.setProperty('display', 'none', 'important');
-      } else if (role === 'Admin') {
+      } else if (effectiveModules.includes('*') || (modKey && effectiveModules.includes(modKey))) {
         tile.classList.remove('d-none');
         tile.style.display = 'flex';
-      } else if (role === 'Manager') {
-        if (scope === 'all' || scope === 'admin,manager') {
-          tile.classList.remove('d-none');
-          tile.style.display = 'flex';
-        } else {
-          tile.classList.add('d-none');
-          tile.style.setProperty('display', 'none', 'important');
-        }
-      } else if (role === 'Staff') {
-        if (scope === 'all') {
-          tile.classList.remove('d-none');
-          tile.style.display = 'flex';
-        } else {
-          tile.classList.add('d-none');
-          tile.style.setProperty('display', 'none', 'important');
-        }
+      } else {
+        tile.classList.add('d-none');
+        tile.style.setProperty('display', 'none', 'important');
       }
     });
 
     if (heroAddBtn) {
-      if (role === 'Staff') heroAddBtn.style.display = 'none';
+      if (!effectiveModules.includes('*') && !effectiveModules.includes('add_product')) heroAddBtn.style.display = 'none';
       else heroAddBtn.style.display = 'inline-flex';
     }
   }
@@ -1218,7 +1232,91 @@ function setupHeaderStoreDropdown() {
   });
 }
 
-// Auto-run header store dropdown controller on DOMContentLoaded
+/** User Management Controller for Org Admins & Super Admins **/
+async function initUserManagementPage() {
+  const userTableBody = document.querySelector('table tbody, .table-responsive tbody, #users-table-body');
+  if (!userTableBody) return;
+
+  console.log('Initializing User Management Controller...');
+
+  let currentUser = null;
+  try { currentUser = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
+  const role = currentUser ? currentUser.role : (localStorage.getItem('avocado_role') || 'Admin');
+
+  // Parse org allowed modules (Set by Super Admin)
+  let orgModules = [];
+  try {
+    orgModules = typeof (currentUser && currentUser.enabled_modules) === 'string' 
+      ? JSON.parse(currentUser.enabled_modules) 
+      : ((currentUser && currentUser.enabled_modules) || ["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]);
+  } catch(e){}
+
+  async function loadUsers() {
+    try {
+      const users = await API.request('/api/users');
+      let html = '';
+
+      users.forEach(u => {
+        let permList = [];
+        try { permList = typeof u.permissions === 'string' ? JSON.parse(u.permissions) : (u.permissions || []); } catch(e){}
+        const badgeColor = u.role === 'Super Admin' ? 'bg-danger' : (u.role === 'Admin' ? 'bg-success' : (u.role === 'Manager' ? 'bg-info' : 'bg-secondary'));
+        
+        html += `
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-md me-2">
+                  <img src="assets/img/users/user-01.jpg" alt="User" class="rounded-circle border border-2 border-success" style="width: 38px; height: 38px; object-fit: cover;">
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0">${u.name}</h6>
+                  <small class="text-white-50">${u.email}</small>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge ${badgeColor} px-3 py-1 fs-12">${u.role}</span></td>
+            <td><span class="badge bg-dark border border-white-20 text-white px-2 py-1 fs-12">${u.org_name || 'Tenant Org'}</span></td>
+            <td>${u.phone || 'N/A'}</td>
+            <td>
+              <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
+                ${permList.includes('*') ? '<span class="badge bg-danger fs-11">Full Access</span>' : permList.map(p => `<span class="badge bg-dark border border-success-subtle text-success fs-11">${p}</span>`).join('')}
+              </div>
+            </td>
+            <td><span class="badge bg-success-transparent text-success">${u.status || 'Active'}</span></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-danger delete-user-btn" data-id="${u.id}">
+                <i class="ti ti-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      userTableBody.innerHTML = html || '<tr><td colspan="7" class="text-center py-4 text-white-50">No team members found</td></tr>';
+
+      // Attach Delete Handlers
+      userTableBody.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (confirm('Are you sure you want to remove this employee account?')) {
+            await API.request(`/api/users/${btn.getAttribute('data-id')}`, { method: 'DELETE' });
+            API.showToast('User account deleted successfully');
+            loadUsers();
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    }
+  }
+
+  await loadUsers();
+}
+
+// Auto-run header store dropdown controller & page initializers on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
   setupHeaderStoreDropdown();
+  if (window.location.pathname.includes('users.html')) {
+    initUserManagementPage();
+  }
 });
