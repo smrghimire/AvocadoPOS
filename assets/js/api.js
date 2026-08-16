@@ -1010,7 +1010,7 @@ async function initDashboardPage() {
         tile.style.display = 'flex';
       } else if (isSuperOnly) {
         tile.classList.add('d-none');
-        tile.style.display = 'none';
+        tile.style.setProperty('display', 'none', 'important');
       } else if (role === 'Admin') {
         tile.classList.remove('d-none');
         tile.style.display = 'flex';
@@ -1020,7 +1020,7 @@ async function initDashboardPage() {
           tile.style.display = 'flex';
         } else {
           tile.classList.add('d-none');
-          tile.style.display = 'none';
+          tile.style.setProperty('display', 'none', 'important');
         }
       } else if (role === 'Staff') {
         if (scope === 'all') {
@@ -1028,7 +1028,7 @@ async function initDashboardPage() {
           tile.style.display = 'flex';
         } else {
           tile.classList.add('d-none');
-          tile.style.display = 'none';
+          tile.style.setProperty('display', 'none', 'important');
         }
       }
     });
