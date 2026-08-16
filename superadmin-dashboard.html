@@ -312,17 +312,6 @@
 	<script src="assets/js/api.js"></script>
 
 	<script>
-		// Strict Super Admin Access Protection Guard
-		(function checkSuperAdminAccess() {
-			let user = null;
-			try { user = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
-			const role = user ? user.role : (localStorage.getItem('avocado_role') || '');
-			if (role !== 'Super Admin') {
-				alert('Access Denied: Super Admin privileges required to view the Super Admin Command Center.');
-				window.location.href = 'index.html';
-			}
-		})();
-
 		document.addEventListener('DOMContentLoaded', async () => {
 			await loadSuperAdminStats();
 			await loadOrganizations();

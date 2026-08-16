@@ -969,78 +969,19 @@ async function initDashboardPage() {
     const heroTitle = document.getElementById('hero-welcome-title');
     const heroDesc = document.getElementById('hero-welcome-desc');
     const heroAddBtn = document.getElementById('hero-add-product-btn');
-    const superBtn = document.getElementById('superadmin-top-btn');
+    if (superBtn) superBtn.classList.remove('d-none');
+    if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-success"></span> 👑 Super Admin (Avocado Inventory)';
+    if (noticeEl) noticeEl.textContent = 'All Inventory & Management Modules Enabled';
 
-    if (userTitle && userName) userTitle.textContent = userName;
-
-    if (role === 'Super Admin') {
-      if (statusBadge) statusBadge.innerHTML = '<span class="os-status-dot bg-danger"></span> 👑 Platform Super Admin';
-      if (noticeEl) noticeEl.textContent = 'Showing all platform governance & tenant modules for Super Admin';
-      if (userTitle) userTitle.textContent = userName || 'System Super Admin';
-      if (heroTitle) heroTitle.textContent = 'Super Admin Control Panel 👑';
-      if (heroDesc) heroDesc.textContent = 'Platform level access to all organizations, users, and module controls.';
-      if (superBtn) superBtn.classList.remove('d-none');
-    } else if (role === 'Admin') {
-      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot"></span> 🛡️ Org Admin (${orgName || 'Tenant Org'})`;
-      if (noticeEl) noticeEl.textContent = 'Showing all 12 inventory modules for Org Admin';
-      if (heroTitle) heroTitle.textContent = `Welcome to ${orgName || 'Avocado Inventory'} 👋`;
-      if (heroDesc) heroDesc.textContent = 'Enterprise Inventory Management & Stock Control System.';
-      if (superBtn) superBtn.classList.add('d-none');
-    } else if (role === 'Manager') {
-      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-info"></span> 👔 Inventory Manager (${orgName || 'Tenant Org'})`;
-      if (noticeEl) noticeEl.textContent = 'Showing 9 operational modules for Inventory Manager (Admin/Settings Hidden)';
-      if (heroTitle) heroTitle.textContent = 'Inventory Operations Workspace 👔';
-      if (heroDesc) heroDesc.textContent = 'Operational stock adjustments, catalog management, and supplier procurement.';
-      if (superBtn) superBtn.classList.add('d-none');
-    } else if (role === 'Staff') {
-      if (statusBadge) statusBadge.innerHTML = `<span class="os-status-dot bg-secondary"></span> 📦 Stock Staff (${orgName || 'Tenant Org'})`;
-      if (noticeEl) noticeEl.textContent = 'Showing 4 core task modules for Stock Staff';
-      if (heroTitle) heroTitle.textContent = 'Stock Staff Task Portal 📦';
-      if (heroDesc) heroDesc.textContent = 'Quick access to stock counts, barcode generators, and inventory lookups.';
-      if (superBtn) superBtn.classList.add('d-none');
-    }
-
-    // Filter App Tiles on Launchpad
+    // Show All App Tiles on Launchpad
     document.querySelectorAll('.os-app-tile').forEach(tile => {
-      const scope = tile.getAttribute('data-role-scope');
-      const isSuperOnly = tile.classList.contains('role-superadmin-only');
-
-      if (role === 'Super Admin') {
-        tile.classList.remove('d-none');
-        tile.style.display = 'flex';
-      } else if (isSuperOnly) {
-        tile.classList.add('d-none');
-        tile.style.setProperty('display', 'none', 'important');
-      } else if (role === 'Admin') {
-        tile.classList.remove('d-none');
-        tile.style.display = 'flex';
-      } else if (role === 'Manager') {
-        if (scope === 'all' || scope === 'admin,manager') {
-          tile.classList.remove('d-none');
-          tile.style.display = 'flex';
-        } else {
-          tile.classList.add('d-none');
-          tile.style.setProperty('display', 'none', 'important');
-        }
-      } else if (role === 'Staff') {
-        if (scope === 'all') {
-          tile.classList.remove('d-none');
-          tile.style.display = 'flex';
-        } else {
-          tile.classList.add('d-none');
-          tile.style.setProperty('display', 'none', 'important');
-        }
-      }
+      tile.classList.remove('d-none');
+      tile.style.display = 'flex';
     });
 
-    // Filter Dock Items
-    document.querySelectorAll('.dock-admin-manager').forEach(item => {
-      if (role === 'Staff') item.style.display = 'none';
-      else item.style.display = 'flex';
-    });
-    document.querySelectorAll('.dock-admin-only').forEach(item => {
-      if (role === 'Admin' || role === 'Super Admin') item.style.display = 'flex';
-      else item.style.display = 'none';
+    // Show All Dock Items
+    document.querySelectorAll('.dock-admin-manager, .dock-admin-only').forEach(item => {
+      item.style.display = 'flex';
     });
 
     if (heroAddBtn) {

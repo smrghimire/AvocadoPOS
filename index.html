@@ -35,7 +35,7 @@
 				<img src="assets/img/logo.svg" alt="Avocado Inventory Logo">
 			</a>
 			<span class="os-status-badge" id="current-role-badge">
-				<span class="os-status-dot"></span> 🛡️ Org Admin (FreshMart Group)
+				<span class="os-status-dot bg-success"></span> 👑 Super Admin (Avocado Inventory)
 			</span>
 		</div>
 
@@ -45,14 +45,14 @@
 				Loading clock...
 			</div>
 
-			<a href="superadmin-dashboard.html" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-none" id="superadmin-top-btn">
+			<a href="superadmin-dashboard.html" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" id="superadmin-top-btn">
 				<i class="ti ti-crown me-1"></i> Super Admin Panel
 			</a>
 
 			<div class="dropdown">
 				<a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
 					<img src="assets/img/customer/customer15.jpg" alt="User Avatar" class="rounded-circle me-2 border border-2 border-success" style="width: 38px; height: 38px; object-fit: cover;">
-					<span class="d-none d-lg-inline fw-semibold fs-14" id="current-user-name">Adrian Herman</span>
+					<span class="d-none d-lg-inline fw-semibold fs-14" id="current-user-name">System Super Admin</span>
 				</a>
 				<ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow-lg border-0" style="background: rgba(10, 26, 14, 0.95); backdrop-filter: blur(16px);">
 					<li><a class="dropdown-item py-2" href="profile.html"><i class="ti ti-user me-2 text-success"></i> My Profile</a></li>
@@ -144,24 +144,24 @@
 			<h4 class="fw-bold text-white mb-0 d-flex align-items-center">
 				<i class="ti ti-apps me-2 text-success"></i> Inventory Application Launchpad
 			</h4>
-			<span class="text-white-50 fs-14" id="role-scope-notice">Showing modules for Org Admin</span>
+			<span class="text-white-50 fs-14" id="role-scope-notice">All Inventory & Management Modules Enabled</span>
 		</div>
 
-		<!-- 12-App Launchpad Grid (With Dynamic Role Filtering) -->
+		<!-- Launchpad Apps Grid (Full Access) -->
 		<div class="os-app-grid" id="os-apps-container">
 			
-			<!-- Super Admin Command Center (Super Admin Only) -->
-			<a href="superadmin-dashboard.html" class="os-app-tile role-superadmin-only d-none" data-app-name="super admin control panel organizations users platform">
-				<span class="os-app-badge bg-danger text-white">Platform Super Admin</span>
+			<!-- Super Admin Command Center -->
+			<a href="superadmin-dashboard.html" class="os-app-tile" data-app-name="super admin control panel organizations users platform">
+				<span class="os-app-badge bg-danger text-white">Super Admin</span>
 				<div class="os-app-icon-wrapper os-icon-admin">
 					<i class="ti ti-crown"></i>
 				</div>
 				<div class="os-app-title">Super Admin Panel</div>
-				<div class="os-app-desc">Tenant Orgs & Users</div>
+				<div class="os-app-desc">Tenant Orgs & Governance</div>
 			</a>
 
-			<!-- App 1: Products Catalog (All Roles) -->
-			<a href="products.html" class="os-app-tile" data-role-scope="all" data-app-name="products stock inventory catalog items">
+			<!-- App 1: Products Catalog -->
+			<a href="products.html" class="os-app-tile" data-app-name="products stock inventory catalog items">
 				<span class="os-app-badge bg-info text-white">Inventory</span>
 				<div class="os-app-icon-wrapper os-icon-products">
 					<i class="ti ti-box"></i>
@@ -170,8 +170,8 @@
 				<div class="os-app-desc">All Items & Stock</div>
 			</a>
 
-			<!-- App 2: Add New Product (Admin & Manager) -->
-			<a href="add-product.html" class="os-app-tile" data-role-scope="admin,manager" data-app-name="add product create new SKU item barcode">
+			<!-- App 2: Add New Product -->
+			<a href="add-product.html" class="os-app-tile" data-app-name="add product create new SKU item barcode">
 				<span class="os-app-badge bg-warning text-dark">Quick Action</span>
 				<div class="os-app-icon-wrapper os-icon-add">
 					<i class="ti ti-circle-plus"></i>
@@ -180,8 +180,8 @@
 				<div class="os-app-desc">Create Stock Entry</div>
 			</a>
 
-			<!-- App 3: Categories & Classification (Admin & Manager) -->
-			<a href="category-list.html" class="os-app-tile" data-role-scope="admin,manager" data-app-name="categories classification subcategories types">
+			<!-- App 3: Categories & Classification -->
+			<a href="category-list.html" class="os-app-tile" data-app-name="categories classification subcategories types">
 				<span class="os-app-badge bg-success text-white">Classification</span>
 				<div class="os-app-icon-wrapper os-icon-categories">
 					<i class="ti ti-category"></i>
@@ -190,8 +190,8 @@
 				<div class="os-app-desc">Product Groups</div>
 			</a>
 
-			<!-- App 4: Brand List (Admin & Manager) -->
-			<a href="brand-list.html" class="os-app-tile" data-role-scope="admin,manager" data-app-name="brands manufacturers logos vendor">
+			<!-- App 4: Brand List -->
+			<a href="brand-list.html" class="os-app-tile" data-app-name="brands manufacturers logos vendor">
 				<span class="os-app-badge bg-teal text-white" style="background:#00897b;">Brands</span>
 				<div class="os-app-icon-wrapper os-icon-brands">
 					<i class="ti ti-tags"></i>
@@ -200,8 +200,8 @@
 				<div class="os-app-desc">Manufacturers</div>
 			</a>
 
-			<!-- App 5: Stock Control & Adjustments (All Roles) -->
-			<a href="manage-stocks.html" class="os-app-tile" data-role-scope="all" data-app-name="stock control adjustments transfer manage stock">
+			<!-- App 5: Stock Control & Adjustments -->
+			<a href="manage-stocks.html" class="os-app-tile" data-app-name="stock control adjustments transfer manage stock">
 				<span class="os-app-badge bg-purple text-white" style="background:#9c27b0;">Stock Control</span>
 				<div class="os-app-icon-wrapper os-icon-stocks">
 					<i class="ti ti-adjustments-horizontal"></i>
@@ -210,8 +210,8 @@
 				<div class="os-app-desc">Audits & Transfers</div>
 			</a>
 
-			<!-- App 6: Low Stock & Expiries (All Roles) -->
-			<a href="low-stocks.html" class="os-app-tile" data-role-scope="all" data-app-name="low stock expiries alerts minimum quantity warning">
+			<!-- App 6: Low Stock & Expiries -->
+			<a href="low-stocks.html" class="os-app-tile" data-app-name="low stock expiries alerts minimum quantity warning">
 				<span class="os-app-badge bg-danger text-white">Stock Alerts</span>
 				<div class="os-app-icon-wrapper os-icon-alerts">
 					<i class="ti ti-alert-triangle"></i>
@@ -220,8 +220,8 @@
 				<div class="os-app-desc">Low Stock & Expiries</div>
 			</a>
 
-			<!-- App 7: Warehouses & Stores (Admin & Manager) -->
-			<a href="warehouse.html" class="os-app-tile" data-role-scope="admin,manager" data-app-name="warehouse storage hub stores locations">
+			<!-- App 7: Warehouses & Stores -->
+			<a href="warehouse.html" class="os-app-tile" data-app-name="warehouse storage hub stores locations">
 				<span class="os-app-badge bg-secondary text-white">Storage</span>
 				<div class="os-app-icon-wrapper os-icon-warehouse">
 					<i class="ti ti-building-warehouse"></i>
@@ -230,8 +230,8 @@
 				<div class="os-app-desc">Storage Locations</div>
 			</a>
 
-			<!-- App 8: Suppliers & Purchases (Admin & Manager) -->
-			<a href="suppliers.html" class="os-app-tile" data-role-scope="admin,manager" data-app-name="suppliers vendors purchase orders procurement">
+			<!-- App 8: Suppliers & Purchases -->
+			<a href="suppliers.html" class="os-app-tile" data-app-name="suppliers vendors purchase orders procurement">
 				<span class="os-app-badge bg-indigo text-white" style="background:#3f51b5;">Procurement</span>
 				<div class="os-app-icon-wrapper os-icon-suppliers">
 					<i class="ti ti-truck"></i>
@@ -240,8 +240,8 @@
 				<div class="os-app-desc">Vendor Procurement</div>
 			</a>
 
-			<!-- App 9: Units & Barcodes (All Roles) -->
-			<a href="barcode.html" class="os-app-tile" data-role-scope="all" data-app-name="units barcodes qr code variant attributes">
+			<!-- App 9: Units & Barcodes -->
+			<a href="barcode.html" class="os-app-tile" data-app-name="units barcodes qr code variant attributes">
 				<span class="os-app-badge bg-orange text-white" style="background:#f57c00;">Barcodes</span>
 				<div class="os-app-icon-wrapper os-icon-barcodes">
 					<i class="ti ti-barcode"></i>
@@ -250,8 +250,8 @@
 				<div class="os-app-desc">Generators & Labels</div>
 			</a>
 
-			<!-- App 10: Inventory Reports (Admin Only) -->
-			<a href="inventory-report.html" class="os-app-tile" data-role-scope="admin" data-app-name="inventory reports stock reports valuation analytics">
+			<!-- App 10: Inventory Reports -->
+			<a href="inventory-report.html" class="os-app-tile" data-app-name="inventory reports stock reports valuation analytics">
 				<span class="os-app-badge bg-success text-white">Analytics</span>
 				<div class="os-app-icon-wrapper os-icon-reports">
 					<i class="ti ti-report-analytics"></i>
@@ -260,8 +260,8 @@
 				<div class="os-app-desc">Valuation Analytics</div>
 			</a>
 
-			<!-- App 11: Executive Admin (Admin Only) -->
-			<a href="admin-dashboard.html" class="os-app-tile" data-role-scope="admin" data-app-name="admin executive control panel system">
+			<!-- App 11: Executive Admin -->
+			<a href="admin-dashboard.html" class="os-app-tile" data-app-name="admin executive control panel system">
 				<span class="os-app-badge bg-cyan text-white" style="background:#00acc1;">Admin</span>
 				<div class="os-app-icon-wrapper os-icon-admin">
 					<i class="ti ti-shield"></i>
@@ -270,8 +270,8 @@
 				<div class="os-app-desc">System Controls</div>
 			</a>
 
-			<!-- App 12: System Settings (Admin Only) -->
-			<a href="general-settings.html" class="os-app-tile" data-role-scope="admin" data-app-name="settings configuration preferences system">
+			<!-- App 12: System Settings -->
+			<a href="general-settings.html" class="os-app-tile" data-app-name="settings configuration preferences system">
 				<span class="os-app-badge bg-dark text-white">Config</span>
 				<div class="os-app-icon-wrapper os-icon-settings">
 					<i class="ti ti-settings"></i>
@@ -288,10 +288,13 @@
 		<a href="index.html" class="os-dock-item active" title="OS Launchpad">
 			<i class="ti ti-layout-grid"></i>
 		</a>
+		<a href="superadmin-dashboard.html" class="os-dock-item" title="Super Admin Panel">
+			<i class="ti ti-crown text-danger"></i>
+		</a>
 		<a href="products.html" class="os-dock-item" title="Products Catalog">
 			<i class="ti ti-box text-info"></i>
 		</a>
-		<a href="add-product.html" class="os-dock-item dock-admin-manager" title="Add Product">
+		<a href="add-product.html" class="os-dock-item" title="Add Product">
 			<i class="ti ti-circle-plus text-warning"></i>
 		</a>
 		<a href="manage-stocks.html" class="os-dock-item" title="Stock Adjustments">
@@ -301,7 +304,7 @@
 		<a href="low-stocks.html" class="os-dock-item" title="Low Stock Alerts">
 			<i class="ti ti-alert-triangle text-danger"></i>
 		</a>
-		<a href="general-settings.html" class="os-dock-item dock-admin-only" title="System Settings">
+		<a href="general-settings.html" class="os-dock-item" title="System Settings">
 			<i class="ti ti-settings text-white-50"></i>
 		</a>
 	</div>
