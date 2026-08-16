@@ -1,17 +1,15 @@
-# AvocadoPOS - Retail POS & Inventory Management System
+# Avocado Inventory - Enterprise Inventory Management System
 
-**AvocadoPOS** is a full-stack Point of Sale (POS) and Inventory Management system built with **Node.js, Express.js, SQLite3, HTML5, CSS3, Bootstrap 5, and Vanilla JavaScript**.
+**Avocado Inventory** is a full-stack, enterprise-grade Inventory Management System built with **Node.js, Express.js, SQLite3, HTML5, CSS3, Bootstrap 5, and Vanilla JavaScript**.
 
-It features real-time database persistence for product management, stock tracking, POS checkout with automatic inventory deduction, image file uploads, and live dashboard analytics.
+It provides complete lifecycle control over product inventory, stock levels, stock transfers, barcode generation, low-stock warnings, warehouse storage management, supplier procurement, and real-time inventory valuation analytics.
 
 ---
 
 ## 🚀 Quick Start Guide: How to Run from Source Code
 
-Follow these simple steps to run **AvocadoPOS** on any computer:
-
 ### Prerequisites
-- **Node.js** (v16 or higher recommended). Download from [nodejs.org](https://nodejs.org/).
+- **Node.js** (v16 or higher). Download from [nodejs.org](https://nodejs.org/).
 - **npm** (included automatically with Node.js).
 - A modern web browser (Google Chrome, Mozilla Firefox, Apple Safari, or Microsoft Edge).
 
@@ -26,12 +24,11 @@ Follow these simple steps to run **AvocadoPOS** on any computer:
    ```
 
 2. **Install Dependencies**:
-   Install the required Node.js backend packages (`express`, `sqlite3`, `cors`, `multer`):
    ```bash
    npm install
    ```
 
-3. **Start the Application Server**:
+3. **Start the Inventory Server**:
    ```bash
    npm start
    ```
@@ -49,28 +46,21 @@ Follow these simple steps to run **AvocadoPOS** on any computer:
 
 ---
 
-## ✨ Features & Core Capabilities
+## ✨ Dedicated Inventory Management Modules
 
-- 🥑 **Product Management (`add-product.html` / `products.html`)**:
-  - Add new products with custom name, SKU, price, cost price, quantity, category, brand, and description.
-  - Upload product images saved directly to the server's `uploads/` directory.
-  - Delete products with real-time database removal.
-  - Low-stock warning indicators when quantity falls below alert threshold.
-
-- 🛒 **Point of Sale (POS Terminal) (`pos.html`)**:
-  - Interactive grid displaying live inventory from SQLite.
-  - Add items to cart, adjust quantities, calculate subtotals and totals.
-  - Complete checkout with real-time **stock deduction** in the database.
-
-- 📊 **Dashboard & Metrics (`index.html`)**:
-  - Live summary statistics for total sales revenue, completed orders, product count, and low-stock items.
-
-- 📁 **Database Persistence (`database.sqlite`)**:
-  - Embedded SQLite relational database storing `products`, `categories`, `brands`, `customers`, `suppliers`, `orders`, and `order_items`.
+- 📦 **Products Catalog (`products.html`)**: View, search, filter, and delete inventory stock items with real-time database state.
+- ➕ **Add New Product (`add-product.html`)**: Create new products with custom name, SKU, price, cost price, quantity, category, brand, and image file uploads.
+- 🏷️ **Categories & Brands (`category-list.html` / `brand-list.html`)**: Manage product classifications and manufacturer brands.
+- 📊 **Stock Control & Adjustments (`manage-stocks.html`)**: Handle stock audits, inventory adjustments, and warehouse transfers.
+- ⚠️ **Stock Alerts & Expiries (`low-stocks.html`)**: Monitor products falling below safety thresholds and track product expiration dates.
+- 🏢 **Warehouses & Stores (`warehouse.html`)**: Multi-location warehouse storage management.
+- 🚚 **Suppliers & Purchase Orders (`suppliers.html`)**: Vendor directories, purchase returns, and procurement management.
+- 📐 **Barcodes & Labels (`barcode.html`)**: Barcode and QR code generator for inventory scanning.
+- 📈 **Inventory Valuation Reports (`inventory-report.html`)**: Comprehensive financial stock reports and stock movement analytics.
 
 ---
 
-## 🔌 REST API Endpoints Overview
+## 🔌 REST API Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -83,9 +73,8 @@ Follow these simple steps to run **AvocadoPOS** on any computer:
 | `GET` | `/api/categories` | Returns all categories |
 | `POST` | `/api/categories` | Creates a new category |
 | `GET` | `/api/brands` | Returns all brands |
-| `GET` | `/api/customers` | Returns all customers |
-| `POST` | `/api/orders` | POS Checkout: creates order & **deducts product stock** |
-| `GET` | `/api/dashboard/stats` | Summary statistics (revenue, sales, low stock count) |
+| `GET` | `/api/suppliers` | Returns supplier records |
+| `GET` | `/api/dashboard/stats` | Summary statistics (inventory valuation, product count, low stock count) |
 
 ---
 
@@ -97,30 +86,24 @@ Follow these simple steps to run **AvocadoPOS** on any computer:
 ├── package.json               # Project Dependencies & Run Scripts
 ├── database.sqlite            # SQLite Database (Auto-created on launch)
 ├── uploads/                   # Uploaded Product Images Directory
-├── index.html                 # Main Dashboard Overview
-├── pos.html                   # Point of Sale (POS) Interface
-├── products.html              # Product Inventory Catalog
+├── index.html                 # Modern OS Launchpad Landing Page
+├── products.html              # Products Inventory Catalog
 ├── add-product.html           # Product Creation Form
+├── manage-stocks.html         # Stock Control & Adjustments
+├── low-stocks.html            # Low Stock & Expiry Alerts
+├── warehouse.html             # Warehouse Storage Hubs
+├── suppliers.html             # Supplier Procurement Directory
 ├── assets/
 │   ├── js/
 │   │   └── api.js             # Front-End API Bridge & Dynamic Controllers
-│   ├── css/                   # Stylesheets & Bootstrap 5
+│   ├── css/
+│   │   └── os-launchpad.css   # OS Launchpad Glassmorphic Stylesheet
 │   └── img/                   # Branding & Logo Assets
 └── README.md                  # Project Documentation
 ```
 
 ---
 
-## 🛠️ Environment Configuration (Optional)
-
-By default, the server runs on port `8000`. You can specify a custom port by setting the `PORT` environment variable:
-
-```bash
-PORT=3000 npm start
-```
-
----
-
 ## 📝 License
 
-Distributed under the **MIT License**. Created for **AvocadoPOS**.
+Distributed under the **MIT License**. Created for **Avocado Inventory**.

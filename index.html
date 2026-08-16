@@ -6,9 +6,9 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="AvocadoPOS OS Launchpad - Modern Enterprise Point of Sale & Inventory Desktop Interface">
-	<meta name="author" content="AvocadoPOS">
-	<title>AvocadoPOS - OS App Launchpad & Desktop</title>
+	<meta name="description" content="Avocado Inventory - Enterprise Inventory Management & Stock Control System">
+	<meta name="author" content="Avocado Inventory">
+	<title>Avocado Inventory - Enterprise Inventory Management System</title>
 
 	<!-- Favicon -->
 	<link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
@@ -34,10 +34,10 @@
 		<!-- Left: Brand Logo & Status -->
 		<div class="d-flex align-items-center gap-3">
 			<a href="index.html" class="os-brand-logo">
-				<img src="assets/img/logo.svg" alt="AvocadoPOS Logo">
+				<img src="assets/img/logo.svg" alt="Avocado Inventory Logo">
 			</a>
 			<span class="os-status-badge">
-				<span class="os-status-dot"></span> Server Live (SQLite)
+				<span class="os-status-dot"></span> System Live (SQLite Inventory)
 			</span>
 		</div>
 
@@ -45,7 +45,7 @@
 		<div class="d-none d-md-flex align-items-center">
 			<div class="os-spotlight-box">
 				<i class="ti ti-search text-white-50"></i>
-				<input type="text" id="os-spotlight-input" placeholder="Search modules, products... (Cmd + K)">
+				<input type="text" id="os-spotlight-input" placeholder="Search inventory modules, stock... (Cmd + K)">
 			</div>
 		</div>
 
@@ -78,14 +78,14 @@
 			<div class="row align-items-center">
 				<div class="col-lg-6 mb-4 mb-lg-0">
 					<span class="badge bg-success-transparent text-success px-3 py-2 rounded-pill fs-12 mb-2 border border-success-subtle">
-						<i class="ti ti-sparkles me-1"></i> AvocadoPOS Desktop OS v2.5
+						<i class="ti ti-sparkles me-1"></i> Avocado Inventory OS v2.5
 					</span>
-					<h1 class="display-6 fw-bold text-white mb-2">Welcome to AvocadoPOS 👋</h1>
-					<p class="text-white-50 fs-16 mb-4">Enterprise Point of Sale & Inventory System with SQLite Persistence.</p>
+					<h1 class="display-6 fw-bold text-white mb-2">Welcome to Avocado Inventory 👋</h1>
+					<p class="text-white-50 fs-16 mb-4">Enterprise Inventory Management & Stock Control System with SQLite Persistence.</p>
 
 					<div class="d-flex gap-3 flex-wrap">
-						<a href="pos.html" class="btn btn-lg btn-success px-4 py-2 rounded-pill fw-bold shadow-lg d-inline-flex align-items-center">
-							<i class="ti ti-device-laptop fs-20 me-2"></i> Launch POS Terminal
+						<a href="products.html" class="btn btn-lg btn-success px-4 py-2 rounded-pill fw-bold shadow-lg d-inline-flex align-items-center">
+							<i class="ti ti-box fs-20 me-2"></i> View Inventory Catalog
 						</a>
 						<a href="add-product.html" class="btn btn-lg btn-outline-light px-4 py-2 rounded-pill fw-semibold d-inline-flex align-items-center">
 							<i class="ti ti-plus fs-20 me-2"></i> Add Product
@@ -99,33 +99,11 @@
 						<div class="col-6 col-sm-6">
 							<div class="os-stat-card">
 								<div class="d-flex align-items-center justify-content-between mb-2">
-									<span class="text-white-50 fs-13">Total Revenue</span>
-									<span class="p-2 rounded-circle bg-success bg-opacity-25 text-success"><i class="ti ti-currency-dollar fs-18"></i></span>
-								</div>
-								<h3 class="fw-bold text-white mb-0 total-revenue-val">$0.00</h3>
-								<small class="text-success fs-12"><i class="ti ti-trending-up"></i> Live API Sales</small>
-							</div>
-						</div>
-
-						<div class="col-6 col-sm-6">
-							<div class="os-stat-card">
-								<div class="d-flex align-items-center justify-content-between mb-2">
-									<span class="text-white-50 fs-13">Completed Orders</span>
-									<span class="p-2 rounded-circle bg-info bg-opacity-25 text-info"><i class="ti ti-shopping-cart fs-18"></i></span>
-								</div>
-								<h3 class="fw-bold text-white mb-0 order-count-val">0</h3>
-								<small class="text-info fs-12"><i class="ti ti-check"></i> POS Orders</small>
-							</div>
-						</div>
-
-						<div class="col-6 col-sm-6">
-							<div class="os-stat-card">
-								<div class="d-flex align-items-center justify-content-between mb-2">
 									<span class="text-white-50 fs-13">Products in Stock</span>
-									<span class="p-2 rounded-circle bg-warning bg-opacity-25 text-warning"><i class="ti ti-box fs-18"></i></span>
+									<span class="p-2 rounded-circle bg-success bg-opacity-25 text-success"><i class="ti ti-box fs-18"></i></span>
 								</div>
 								<h3 class="fw-bold text-white mb-0 product-count-val">0</h3>
-								<small class="text-warning fs-12"><i class="ti ti-database"></i> SQLite Inventory</small>
+								<small class="text-success fs-12"><i class="ti ti-database"></i> SQLite Inventory</small>
 							</div>
 						</div>
 
@@ -139,6 +117,28 @@
 								<small class="text-danger fs-12"><i class="ti ti-urgent"></i> Action Needed</small>
 							</div>
 						</div>
+
+						<div class="col-6 col-sm-6">
+							<div class="os-stat-card">
+								<div class="d-flex align-items-center justify-content-between mb-2">
+									<span class="text-white-50 fs-13">Inventory Valuation</span>
+									<span class="p-2 rounded-circle bg-info bg-opacity-25 text-info"><i class="ti ti-currency-dollar fs-18"></i></span>
+								</div>
+								<h3 class="fw-bold text-white mb-0 total-revenue-val">$0.00</h3>
+								<small class="text-info fs-12"><i class="ti ti-trending-up"></i> Live Asset Value</small>
+							</div>
+						</div>
+
+						<div class="col-6 col-sm-6">
+							<div class="os-stat-card">
+								<div class="d-flex align-items-center justify-content-between mb-2">
+									<span class="text-white-50 fs-13">Completed Transactions</span>
+									<span class="p-2 rounded-circle bg-warning bg-opacity-25 text-warning"><i class="ti ti-truck-delivery fs-18"></i></span>
+								</div>
+								<h3 class="fw-bold text-white mb-0 order-count-val">0</h3>
+								<small class="text-warning fs-12"><i class="ti ti-check"></i> Stock Movements</small>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -147,117 +147,127 @@
 		<!-- Module Apps Section Title -->
 		<div class="d-flex justify-content-between align-items-center mb-4">
 			<h4 class="fw-bold text-white mb-0 d-flex align-items-center">
-				<i class="ti ti-apps me-2 text-success"></i> Application Launchpad
+				<i class="ti ti-apps me-2 text-success"></i> Inventory Application Launchpad
 			</h4>
-			<span class="text-white-50 fs-14">Click any app to open its module workspace</span>
+			<span class="text-white-50 fs-14">Click any app to open its inventory management module</span>
 		</div>
 
-		<!-- 12-App Launchpad Grid -->
+		<!-- 12-App Launchpad Grid (Dedicated Inventory Focus) -->
 		<div class="os-app-grid" id="os-apps-container">
 			
-			<!-- App 1: POS Terminal -->
-			<a href="pos.html" class="os-app-tile" data-app-name="pos terminal checkout point of sale">
-				<span class="os-app-badge bg-success text-white">Live POS</span>
-				<div class="os-app-icon-wrapper os-icon-pos">
-					<i class="ti ti-device-laptop"></i>
-				</div>
-				<div class="os-app-title">POS Terminal</div>
-				<div class="os-app-desc">Point of Sale Counter</div>
-			</a>
-
-			<!-- App 2: Products Catalog -->
-			<a href="products.html" class="os-app-tile" data-app-name="products stock inventory catalog">
+			<!-- App 1: Products Catalog -->
+			<a href="products.html" class="os-app-tile" data-app-name="products stock inventory catalog items">
 				<span class="os-app-badge bg-info text-white">Inventory</span>
 				<div class="os-app-icon-wrapper os-icon-products">
 					<i class="ti ti-box"></i>
 				</div>
 				<div class="os-app-title">Products Catalog</div>
-				<div class="os-app-desc">Stock & Inventory List</div>
+				<div class="os-app-desc">All Items & Inventory</div>
 			</a>
 
-			<!-- App 3: Add New Product -->
-			<a href="add-product.html" class="os-app-tile" data-app-name="add product create new SKU item">
+			<!-- App 2: Add New Product -->
+			<a href="add-product.html" class="os-app-tile" data-app-name="add product create new SKU item barcode">
 				<span class="os-app-badge bg-warning text-dark">Quick Action</span>
 				<div class="os-app-icon-wrapper os-icon-add">
 					<i class="ti ti-circle-plus"></i>
 				</div>
 				<div class="os-app-title">Add Product</div>
-				<div class="os-app-desc">Create New Stock Item</div>
+				<div class="os-app-desc">Create Stock Entry</div>
 			</a>
 
-			<!-- App 4: Sales Analytics -->
-			<a href="sales-dashboard.html" class="os-app-tile" data-app-name="sales analytics reports revenue chart">
-				<span class="os-app-badge bg-primary text-white">Analytics</span>
-				<div class="os-app-icon-wrapper os-icon-sales">
-					<i class="ti ti-chart-dots"></i>
+			<!-- App 3: Categories & Classification -->
+			<a href="category-list.html" class="os-app-tile" data-app-name="categories classification subcategories types">
+				<span class="os-app-badge bg-success text-white">Classification</span>
+				<div class="os-app-icon-wrapper os-icon-categories">
+					<i class="ti ti-category"></i>
 				</div>
-				<div class="os-app-title">Sales Analytics</div>
-				<div class="os-app-desc">Revenue & Metrics</div>
+				<div class="os-app-title">Categories</div>
+				<div class="os-app-desc">Product Types & Groups</div>
 			</a>
 
-			<!-- App 5: Executive Admin -->
-			<a href="admin-dashboard.html" class="os-app-tile" data-app-name="admin executive dashboard control panel">
-				<span class="os-app-badge bg-danger text-white">Admin</span>
+			<!-- App 4: Brand List -->
+			<a href="brand-list.html" class="os-app-tile" data-app-name="brands manufacturers logos vendor">
+				<span class="os-app-badge bg-teal text-white" style="background:#00897b;">Brands</span>
+				<div class="os-app-icon-wrapper os-icon-brands">
+					<i class="ti ti-tags"></i>
+				</div>
+				<div class="os-app-title">Brand List</div>
+				<div class="os-app-desc">Manufacturers & Brands</div>
+			</a>
+
+			<!-- App 5: Stock Control & Adjustments -->
+			<a href="manage-stocks.html" class="os-app-tile" data-app-name="stock control adjustments transfer manage stock">
+				<span class="os-app-badge bg-purple text-white" style="background:#9c27b0;">Stock Control</span>
+				<div class="os-app-icon-wrapper os-icon-stocks">
+					<i class="ti ti-adjustments-horizontal"></i>
+				</div>
+				<div class="os-app-title">Stock Adjustments</div>
+				<div class="os-app-desc">Audits & Transfers</div>
+			</a>
+
+			<!-- App 6: Low Stock & Expiries -->
+			<a href="low-stocks.html" class="os-app-tile" data-app-name="low stock expiries alerts minimum quantity warning">
+				<span class="os-app-badge bg-danger text-white">Stock Alerts</span>
+				<div class="os-app-icon-wrapper os-icon-alerts">
+					<i class="ti ti-alert-triangle"></i>
+				</div>
+				<div class="os-app-title">Stock Alerts</div>
+				<div class="os-app-desc">Low Stock & Expiries</div>
+			</a>
+
+			<!-- App 7: Warehouses & Stores -->
+			<a href="warehouse.html" class="os-app-tile" data-app-name="warehouse storage hub stores locations">
+				<span class="os-app-badge bg-secondary text-white">Storage</span>
+				<div class="os-app-icon-wrapper os-icon-warehouse">
+					<i class="ti ti-building-warehouse"></i>
+				</div>
+				<div class="os-app-title">Warehouses</div>
+				<div class="os-app-desc">Storage Hubs & Locations</div>
+			</a>
+
+			<!-- App 8: Suppliers & Purchases -->
+			<a href="suppliers.html" class="os-app-tile" data-app-name="suppliers vendors purchase orders procurement">
+				<span class="os-app-badge bg-indigo text-white" style="background:#3f51b5;">Procurement</span>
+				<div class="os-app-icon-wrapper os-icon-suppliers">
+					<i class="ti ti-truck"></i>
+				</div>
+				<div class="os-app-title">Suppliers & Purchase</div>
+				<div class="os-app-desc">Vendor Procurement</div>
+			</a>
+
+			<!-- App 9: Units & Barcodes -->
+			<a href="barcode.html" class="os-app-tile" data-app-name="units barcodes qr code variant attributes">
+				<span class="os-app-badge bg-orange text-white" style="background:#f57c00;">Barcodes</span>
+				<div class="os-app-icon-wrapper os-icon-barcodes">
+					<i class="ti ti-barcode"></i>
+				</div>
+				<div class="os-app-title">Units & Barcodes</div>
+				<div class="os-app-desc">Generators & Labels</div>
+			</a>
+
+			<!-- App 10: Inventory Reports -->
+			<a href="inventory-report.html" class="os-app-tile" data-app-name="inventory reports stock reports valuation analytics">
+				<span class="os-app-badge bg-success text-white">Analytics</span>
+				<div class="os-app-icon-wrapper os-icon-reports">
+					<i class="ti ti-report-analytics"></i>
+				</div>
+				<div class="os-app-title">Inventory Reports</div>
+				<div class="os-app-desc">Valuation & Stock Movement</div>
+			</a>
+
+			<!-- App 11: Executive Admin -->
+			<a href="admin-dashboard.html" class="os-app-tile" data-app-name="admin executive control panel system">
+				<span class="os-app-badge bg-cyan text-white" style="background:#00acc1;">Admin</span>
 				<div class="os-app-icon-wrapper os-icon-admin">
 					<i class="ti ti-shield"></i>
 				</div>
 				<div class="os-app-title">Executive Admin</div>
-				<div class="os-app-desc">System Control Panel</div>
+				<div class="os-app-desc">System Administration</div>
 			</a>
 
-			<!-- App 6: Customers Hub -->
-			<a href="customers.html" class="os-app-tile" data-app-name="customers crm clients database">
-				<span class="os-app-badge bg-teal text-white" style="background:#00897b;">CRM</span>
-				<div class="os-app-icon-wrapper os-icon-customers">
-					<i class="ti ti-users"></i>
-				</div>
-				<div class="os-app-title">Customer Hub</div>
-				<div class="os-app-desc">Profiles & Accounts</div>
-			</a>
-
-			<!-- App 7: Supplier Directory -->
-			<a href="suppliers.html" class="os-app-tile" data-app-name="suppliers vendors directory wholesale">
-				<span class="os-app-badge bg-indigo text-white" style="background:#3f51b5;">Directory</span>
-				<div class="os-app-icon-wrapper os-icon-suppliers">
-					<i class="ti ti-truck"></i>
-				</div>
-				<div class="os-app-title">Suppliers</div>
-				<div class="os-app-desc">Vendor Database</div>
-			</a>
-
-			<!-- App 8: Invoices & Receipts -->
-			<a href="invoice.html" class="os-app-tile" data-app-name="invoices billing receipts sales">
-				<span class="os-app-badge bg-orange text-white" style="background:#f57c00;">Billing</span>
-				<div class="os-app-icon-wrapper os-icon-invoices">
-					<i class="ti ti-receipt"></i>
-				</div>
-				<div class="os-app-title">Invoices</div>
-				<div class="os-app-desc">Billing & Print Receipts</div>
-			</a>
-
-			<!-- App 9: HR & Employees -->
-			<a href="employees-list.html" class="os-app-tile" data-app-name="hr employees staff payroll attendance">
-				<span class="os-app-badge bg-cyan text-white" style="background:#00acc1;">Staff</span>
-				<div class="os-app-icon-wrapper os-icon-hr">
-					<i class="ti ti-user-check"></i>
-				</div>
-				<div class="os-app-title">HR & Employees</div>
-				<div class="os-app-desc">Staff & Attendance</div>
-			</a>
-
-			<!-- App 10: Financial Reports -->
-			<a href="annual-report.html" class="os-app-tile" data-app-name="financial reports balance sheet profit loss">
-				<span class="os-app-badge bg-success text-white">Finance</span>
-				<div class="os-app-icon-wrapper os-icon-finance">
-					<i class="ti ti-report-analytics"></i>
-				</div>
-				<div class="os-app-title">Financial Reports</div>
-				<div class="os-app-desc">Profit & Loss Statements</div>
-			</a>
-
-			<!-- App 11: System Settings -->
-			<a href="general-settings.html" class="os-app-tile" data-app-name="settings configuration options theme">
-				<span class="os-app-badge bg-secondary text-white">Config</span>
+			<!-- App 12: System Settings -->
+			<a href="general-settings.html" class="os-app-tile" data-app-name="settings configuration preferences system">
+				<span class="os-app-badge bg-dark text-white">Config</span>
 				<div class="os-app-icon-wrapper os-icon-settings">
 					<i class="ti ti-settings"></i>
 				</div>
@@ -265,26 +275,13 @@
 				<div class="os-app-desc">Global Preferences</div>
 			</a>
 
-			<!-- App 12: File Manager -->
-			<a href="file-manager.html" class="os-app-tile" data-app-name="file manager documents storage files">
-				<span class="os-app-badge bg-purple text-white" style="background:#8e24aa;">Storage</span>
-				<div class="os-app-icon-wrapper os-icon-files">
-					<i class="ti ti-folder"></i>
-				</div>
-				<div class="os-app-title">File Manager</div>
-				<div class="os-app-desc">Documents & Media</div>
-			</a>
-
 		</div>
 	</main>
 
-	<!-- Floating macOS / iPadOS Style Dock Bar -->
+	<!-- Floating macOS / iPadOS Style Dock Bar (Inventory Focused) -->
 	<div class="os-dock-bar">
 		<a href="index.html" class="os-dock-item active" title="OS Launchpad">
 			<i class="ti ti-layout-grid"></i>
-		</a>
-		<a href="pos.html" class="os-dock-item" title="POS Terminal">
-			<i class="ti ti-device-laptop text-success"></i>
 		</a>
 		<a href="products.html" class="os-dock-item" title="Products Catalog">
 			<i class="ti ti-box text-info"></i>
@@ -292,12 +289,15 @@
 		<a href="add-product.html" class="os-dock-item" title="Add Product">
 			<i class="ti ti-circle-plus text-warning"></i>
 		</a>
-		<div class="os-dock-separator"></div>
-		<a href="sales-dashboard.html" class="os-dock-item" title="Sales Analytics">
-			<i class="ti ti-chart-dots text-primary"></i>
+		<a href="manage-stocks.html" class="os-dock-item" title="Stock Adjustments">
+			<i class="ti ti-adjustments-horizontal text-primary"></i>
 		</a>
-		<a href="admin-dashboard.html" class="os-dock-item" title="Executive Admin">
-			<i class="ti ti-shield text-danger"></i>
+		<div class="os-dock-separator"></div>
+		<a href="low-stocks.html" class="os-dock-item" title="Low Stock Alerts">
+			<i class="ti ti-alert-triangle text-danger"></i>
+		</a>
+		<a href="warehouse.html" class="os-dock-item" title="Warehouses">
+			<i class="ti ti-building-warehouse text-success"></i>
 		</a>
 		<a href="general-settings.html" class="os-dock-item" title="System Settings">
 			<i class="ti ti-settings text-white-50"></i>
@@ -307,7 +307,7 @@
 	<!-- Bootstrap Bundle JS -->
 	<script src="assets/js/bootstrap.bundle.min.js"></script>
 
-	<!-- AvocadoPOS API Bridge -->
+	<!-- Avocado Inventory API Bridge -->
 	<script src="assets/js/api.js"></script>
 
 </body>
