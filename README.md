@@ -1,92 +1,91 @@
 # AvocadoPOS - Retail POS & Inventory Management System
 
-**AvocadoPOS** is a comprehensive, modern, responsive Point of Sale (POS) and Inventory Management web application. Designed for retail stores, warehouses, and multi-location businesses, it provides intuitive interfaces for managing products, tracking sales, handling invoices, managing stock levels, viewing detailed financial analytics, and managing employees.
+**AvocadoPOS** is a full-stack Point of Sale (POS) and Inventory Management system built with **Node.js, Express.js, SQLite3, HTML5, CSS3, Bootstrap 5, and Vanilla JavaScript**.
+
+It features real-time database persistence for product management, stock tracking, POS checkout with automatic inventory deduction, image file uploads, and live dashboard analytics.
 
 ---
 
-## 🚀 How to Run the Software from Source Code
+## 🚀 Quick Start Guide: How to Run from Source Code
 
-Since **AvocadoPOS** is built as a web application with static assets (HTML5, CSS3, JavaScript, Bootstrap 5), you can easily serve and run it locally on any computer.
+Follow these simple steps to run **AvocadoPOS** on any computer:
 
 ### Prerequisites
-- A modern web browser (**Google Chrome**, **Mozilla Firefox**, **Apple Safari**, or **Microsoft Edge**).
-- Optional: **Python 3**, **Node.js**, or **PHP** installed on your system to run a local web server.
+- **Node.js** (v16 or higher recommended). Download from [nodejs.org](https://nodejs.org/).
+- **npm** (included automatically with Node.js).
+- A modern web browser (Google Chrome, Mozilla Firefox, Apple Safari, or Microsoft Edge).
 
 ---
 
-### Option 1: Using Python 3 (Recommended)
+### Step-by-Step Setup
 
-If you have Python 3 installed:
+1. **Extract or Clone the Repository**:
+   ```bash
+   git clone https://github.com/smrghimire/AvocadoPOS.git
+   cd AvocadoPOS
+   ```
 
-1. Open your terminal or command prompt in the project root directory:
+2. **Install Dependencies**:
+   Install the required Node.js backend packages (`express`, `sqlite3`, `cors`, `multer`):
    ```bash
-   cd /path/to/invent
+   npm install
    ```
-2. Start Python's built-in HTTP server:
+
+3. **Start the Application Server**:
    ```bash
-   python3 -m http.server 8000
+   npm start
    ```
-3. Open your browser and navigate to:
+   *Or directly via Node:*
+   ```bash
+   node server.js
+   ```
+
+4. **Access the Application**:
+   Open your browser and visit:
    ```
    http://localhost:8000
    ```
+   *(On first run, SQLite will automatically create `database.sqlite` and seed initial categories, brands, customers, and starter products).*
 
 ---
 
-### Option 2: Using Node.js (`serve` or `http-server`)
+## ✨ Features & Core Capabilities
 
-If you have Node.js installed:
+- 🥑 **Product Management (`add-product.html` / `products.html`)**:
+  - Add new products with custom name, SKU, price, cost price, quantity, category, brand, and description.
+  - Upload product images saved directly to the server's `uploads/` directory.
+  - Delete products with real-time database removal.
+  - Low-stock warning indicators when quantity falls below alert threshold.
 
-1. Open terminal in the project directory.
-2. Run `serve` via `npx`:
-   ```bash
-   npx serve -l 8000 .
-   ```
-   *Alternatively, use `http-server`:*
-   ```bash
-   npx http-server -p 8000
-   ```
-3. Open your browser and visit:
-   ```
-   http://localhost:8000
-   ```
+- 🛒 **Point of Sale (POS Terminal) (`pos.html`)**:
+  - Interactive grid displaying live inventory from SQLite.
+  - Add items to cart, adjust quantities, calculate subtotals and totals.
+  - Complete checkout with real-time **stock deduction** in the database.
 
----
+- 📊 **Dashboard & Metrics (`index.html`)**:
+  - Live summary statistics for total sales revenue, completed orders, product count, and low-stock items.
 
-### Option 3: Using PHP
-
-If you have PHP installed:
-
-1. Open terminal in the project root directory.
-2. Run the PHP development server:
-   ```bash
-   php -S 127.0.0.1:8000
-   ```
-3. Open your browser and visit:
-   ```
-   http://127.0.0.1:8000
-   ```
+- 📁 **Database Persistence (`database.sqlite`)**:
+  - Embedded SQLite relational database storing `products`, `categories`, `brands`, `customers`, `suppliers`, `orders`, and `order_items`.
 
 ---
 
-### Option 4: Direct File Access (No Server Required)
+## 🔌 REST API Endpoints Overview
 
-You can also run the application directly without a web server:
-1. Locate `index.html` in the project folder.
-2. Double-click `index.html` or drag and drop it into your web browser.
-
----
-
-## ✨ Key Features & Modules
-
-- 🛒 **Point of Sale (POS)**: Multiple POS layouts (`pos.html`, `pos-1.html` to `pos-5.html`) supporting item additions, cart modification, discounts, customer selection, and barcode scanning.
-- 📦 **Inventory & Stock Management**: Product list (`products.html`), low-stock alerts, stock adjustments, stock transfers, brands, categories, sub-categories, and variant attributes.
-- 📊 **Dashboards & Analytics**: Main Dashboard (`index.html`), Admin Dashboard (`admin-dashboard.html`), Sales Dashboard (`sales-dashboard.html`), and ApexCharts financial visualizations.
-- 📄 **Invoicing & Sales**: Quotations, sales orders, invoice details, sales returns, purchase orders, purchase returns.
-- 👥 **Customer & Supplier Management**: Comprehensive profiles for customers, suppliers, and billers with due tracking reports.
-- 💼 **HR & Payroll**: Employee list, attendance tracking, leave requests, shift management, payroll/payslip generation, department & designation control.
-- 💰 **Financial Reports**: Balance sheet, trial balance, profit & loss statement, cash flow statement, income/expense reports, tax reports.
-- ⚙️ **System & General Settings**: Company settings, payment gateway integration, email/SMS templates, printer setup, barcode generation, roles & permissions.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/products` | Returns all products with category and brand details |
+| `GET` | `/api/products/:id` | Returns single product details |
+| `POST` | `/api/products` | Creates a new product and saves into SQLite |
+| `PUT` | `/api/products/:id` | Updates an existing product |
+| `DELETE` | `/api/products/:id` | Deletes a product |
+| `POST` | `/api/upload` | Uploads product image file to `/uploads` |
+| `GET` | `/api/categories` | Returns all categories |
+| `POST` | `/api/categories` | Creates a new category |
+| `GET` | `/api/brands` | Returns all brands |
+| `GET` | `/api/customers` | Returns all customers |
+| `POST` | `/api/orders` | POS Checkout: creates order & **deducts product stock** |
+| `GET` | `/api/dashboard/stats` | Summary statistics (revenue, sales, low stock count) |
 
 ---
 
@@ -94,33 +93,34 @@ You can also run the application directly without a web server:
 
 ```
 .
-├── index.html                 # Main Dashboard Landing Page
-├── pos.html                   # Interactive Point of Sale (POS) Interface
-├── products.html              # Product Catalog & Inventory
-├── admin-dashboard.html       # Executive Admin Overview
-├── sales-dashboard.html       # Detailed Sales Metrics
-├── customers.html             # Customer Database
-├── suppliers.html             # Supplier Directory
-├── invoice.html               # Invoice Generator & List
-├── assets/                    # Project Assets
-│   ├── css/                   # Stylesheets & Bootstrap
-│   ├── js/                    # Core Scripts & Chart Initialization
-│   ├── img/                   # Product Images, Logos, Icons
-│   └── plugins/               # External Plugins (ApexCharts, Datatables, FontAwesome, etc.)
+├── server.js                  # Express.js REST API Server & SQLite Migration/Seeder
+├── package.json               # Project Dependencies & Run Scripts
+├── database.sqlite            # SQLite Database (Auto-created on launch)
+├── uploads/                   # Uploaded Product Images Directory
+├── index.html                 # Main Dashboard Overview
+├── pos.html                   # Point of Sale (POS) Interface
+├── products.html              # Product Inventory Catalog
+├── add-product.html           # Product Creation Form
+├── assets/
+│   ├── js/
+│   │   └── api.js             # Front-End API Bridge & Dynamic Controllers
+│   ├── css/                   # Stylesheets & Bootstrap 5
+│   └── img/                   # Branding & Logo Assets
 └── README.md                  # Project Documentation
 ```
 
 ---
 
-## 🛠️ Tech Stack & Third-Party Libraries
+## 🛠️ Environment Configuration (Optional)
 
-- **Framework**: Bootstrap 5
-- **Icons**: FontAwesome 6, Tabler Icons, Feather Icons
-- **Charts**: ApexCharts, Chart.js, Flot, Morris
-- **Data Grids**: DataTables, Bootstrap Select2, Flatpickr
+By default, the server runs on port `8000`. You can specify a custom port by setting the `PORT` environment variable:
+
+```bash
+PORT=3000 npm start
+```
 
 ---
 
-## 📝 License & Credits
+## 📝 License
 
-Designed & Developed by **AvocadoPOS**.
+Distributed under the **MIT License**. Created for **AvocadoPOS**.
