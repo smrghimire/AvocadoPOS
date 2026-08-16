@@ -1476,6 +1476,222 @@ async function initProductsListPage() {
   }
 }
 
+/** Super Admin Dashboard Page Controller **/
+async function initSuperAdminDashboardPage() {
+  console.log('Initializing Super Admin Command Center Controller...');
+
+  // Force Super Admin session context
+  let currentUser = null;
+  try { currentUser = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
+  if (!currentUser || currentUser.role !== 'Super Admin') {
+    const superUser = { id: 1, org_id: null, name: 'System Super Admin', email: 'admin@avocado.com', role: 'Super Admin', permissions: ['*'] };
+    localStorage.setItem('avocado_user', JSON.stringify(superUser));
+    localStorage.setItem('avocado_role', 'Super Admin');
+  }
+
+  // Load Stats
+  try {
+    const stats = await API.request('/api/superadmin/stats');
+    const orgEl = document.getElementById('stat-total-orgs');
+    const userEl = document.getElementById('stat-total-users');
+    const prodEl = document.getElementById('stat-total-products');
+    const valEl = document.getElementById('stat-total-valuation');
+
+    if (orgEl) orgEl.textContent = stats.total_orgs || 0;
+    if (userEl) userEl.textContent = stats.total_users || 0;
+    if (prodEl) prodEl.textContent = stats.total_products || 0;
+    if (valEl) valEl.textContent = `$${parseFloat(stats.total_valuation || 0).toFixed(2)}`;
+  } catch (err) {
+    console.error('Failed to load Super Admin stats in controller:', err);
+  }
+
+  // Load Organizations
+  try {
+    const orgs = await API.request('/api/organizations');
+
+    // Populate user creation modal select dropdown
+    const userOrgSelect = document.getElementById('user-org-select');
+    if (userOrgSelect) {
+      userOrgSelect.innerHTML = '<option value="">Select Organization</option>';
+      orgs.forEach(o => {
+        userOrgSelect.insertAdjacentHTML('beforeend', `<option value="${o.id}">${o.name} (${o.code})</option>`);
+      });
+    }
+
+    // Render Orgs Table Body
+    const orgsTableBody = document.getElementById('super-orgs-table-body');
+    if (orgsTableBody) {
+      let rowsHtml = '';
+      orgs.forEach(o => {
+        rowsHtml += `
+          <tr>
+            <td><code>#${o.id}</code></td>
+            <td class="fw-bold text-white">${o.name}</td>
+            <td><span class="badge bg-secondary">${o.code}</span></td>
+            <td>${o.admin_name || '<span class="text-white-50">Not Set</span>'}</td>
+            <td>${o.admin_email || '<span class="text-white-50">N/A</span>'}</td>
+            <td><span class="badge bg-info">${o.total_users} Users</span></td>
+            <td><span class="badge bg-success">${o.status}</span></td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-danger delete-org-btn me-1" data-id="${o.id}" data-name="${o.name}">
+                <i class="ti ti-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      orgsTableBody.innerHTML = rowsHtml || '<tr><td colspan="8" class="text-center py-4 text-white-50">No organizations found</td></tr>';
+
+      orgsTableBody.querySelectorAll('.delete-org-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const orgId = btn.getAttribute('data-id');
+          const orgName = btn.getAttribute('data-name');
+          if (confirm(`Are you sure you want to delete ${orgName} and all associated accounts?`)) {
+            await API.request(`/api/organizations/${orgId}`, { method: 'DELETE' });
+            API.showToast(`Organization ${orgName} deleted.`);
+            initSuperAdminDashboardPage();
+          }
+        });
+      });
+    }
+
+    // Render Module Matrix Cards
+    const matrixContainer = document.getElementById('super-matrix-container');
+    if (matrixContainer) {
+      const allModules = [
+        { key: 'products', title: 'Products Catalog', icon: 'ti-box', color: 'text-info' },
+        { key: 'add_product', title: 'Add Product', icon: 'ti-circle-plus', color: 'text-warning' },
+        { key: 'categories', title: 'Categories', icon: 'ti-category', color: 'text-success' },
+        { key: 'brands', title: 'Brand List', icon: 'ti-tags', color: 'text-teal' },
+        { key: 'stocks', title: 'Stock Adjustments', icon: 'ti-adjustments-horizontal', color: 'text-purple' },
+        { key: 'alerts', title: 'Low Stock Alerts', icon: 'ti-alert-triangle', color: 'text-danger' },
+        { key: 'warehouses', title: 'Warehouses', icon: 'ti-building-warehouse', color: 'text-secondary' },
+        { key: 'suppliers', title: 'Suppliers & Purchases', icon: 'ti-truck', color: 'text-indigo' },
+        { key: 'barcodes', title: 'Units & Barcodes', icon: 'ti-barcode', color: 'text-orange' },
+        { key: 'reports', title: 'Inventory Reports', icon: 'ti-report-analytics', color: 'text-success' },
+        { key: 'admin_panel', title: 'Executive Admin', icon: 'ti-shield', color: 'text-cyan' },
+        { key: 'settings', title: 'System Settings', icon: 'ti-settings', color: 'text-white-50' }
+      ];
+
+      let matrixHtml = '';
+      orgs.forEach(o => {
+        let enabledList = [];
+        try { enabledList = JSON.parse(o.enabled_modules || '[]'); } catch (e) {}
+
+        matrixHtml += `
+          <div class="col-lg-6" id="matrix-card-${o.id}">
+            <div class="card os-glass-panel border-0 text-white h-100">
+              <div class="card-header bg-transparent border-bottom border-white-10 d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="fw-bold text-white mb-0"><i class="ti ti-building text-success me-2"></i>${o.name}</h5>
+                  <small class="text-white-50">Code: ${o.code} | Admin: ${o.admin_email || 'N/A'}</small>
+                </div>
+                <span class="badge bg-success-transparent text-success border border-success px-3 py-1 rounded-pill">Active Tenant</span>
+              </div>
+              <div class="card-body">
+                <h6 class="text-white-50 fs-13 mb-3 text-uppercase fw-semibold">Module Visibility Switches</h6>
+                <div class="row g-3">
+        `;
+
+        allModules.forEach(m => {
+          const isChecked = enabledList.includes(m.key) ? 'checked' : '';
+          matrixHtml += `
+            <div class="col-6 col-sm-4">
+              <div class="p-2 rounded bg-black bg-opacity-25 border border-white-10 d-flex justify-content-between align-items-center">
+                <span class="fs-13 d-flex align-items-center"><i class="ti ${m.icon} ${m.color} me-1 fs-16"></i> ${m.title}</span>
+                <div class="form-check form-switch m-0">
+                  <input class="form-check-input matrix-toggle-switch" type="checkbox" data-org-id="${o.id}" data-module-key="${m.key}" ${isChecked} style="cursor:pointer;">
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        matrixHtml += `
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      matrixContainer.innerHTML = matrixHtml;
+
+      matrixContainer.querySelectorAll('.matrix-toggle-switch').forEach(sw => {
+        sw.addEventListener('change', async () => {
+          const orgId = sw.getAttribute('data-org-id');
+          const card = document.getElementById(`matrix-card-${orgId}`);
+          const activeSwitches = card.querySelectorAll('.matrix-toggle-switch:checked');
+          const newModules = Array.from(activeSwitches).map(s => s.getAttribute('data-module-key'));
+
+          try {
+            await API.request(`/api/organizations/${orgId}/modules`, {
+              method: 'PUT',
+              body: JSON.stringify({ enabled_modules: newModules })
+            });
+            API.showToast('Module visibility updated for Organization!');
+          } catch (err) {
+            API.showToast('Failed to update module visibility', 'danger');
+          }
+        });
+      });
+    }
+
+  } catch (err) {
+    console.error('Failed to load organizations in controller:', err);
+  }
+
+  // Load Users
+  try {
+    const users = await API.request('/api/users');
+    const usersTableBody = document.getElementById('super-users-table-body');
+    if (usersTableBody) {
+      let html = '';
+      users.forEach(u => {
+        const roleBadge = u.role === 'Super Admin'
+          ? '<span class="badge bg-danger-transparent text-danger fw-bold"><i class="ti ti-crown me-1"></i> Super Admin</span>'
+          : u.role === 'Admin'
+          ? '<span class="badge bg-primary-transparent text-primary fw-bold">Org Admin</span>'
+          : u.role === 'Manager'
+          ? '<span class="badge bg-success-transparent text-success fw-bold">Manager</span>'
+          : '<span class="badge bg-secondary-transparent text-secondary fw-bold">Staff</span>';
+
+        html += `
+          <tr>
+            <td><code>#${u.id}</code></td>
+            <td class="fw-bold text-white">${u.name}</td>
+            <td><code>${u.email}</code></td>
+            <td>${roleBadge}</td>
+            <td>${u.org_name || 'System Global'}</td>
+            <td>${u.phone || '+1 555-0199'}</td>
+            <td><span class="badge bg-success">Active</span></td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-danger delete-user-btn" data-id="${u.id}" data-name="${u.name}">
+                <i class="ti ti-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      usersTableBody.innerHTML = html || '<tr><td colspan="8" class="text-center py-4 text-white-50">No users found</td></tr>';
+
+      usersTableBody.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const userId = btn.getAttribute('data-id');
+          const userName = btn.getAttribute('data-name');
+          if (confirm(`Are you sure you want to delete user ${userName}?`)) {
+            await API.request(`/api/users/${userId}`, { method: 'DELETE' });
+            API.showToast(`User ${userName} deleted.`);
+            initSuperAdminDashboardPage();
+          }
+        });
+      });
+    }
+  } catch (err) {
+    console.error('Failed to load users in controller:', err);
+  }
+}
+
 // Standalone Global Digital Clock Controller
 function startDigitalClock() {
   const updateClock = () => {
@@ -1496,7 +1712,9 @@ function startDigitalClock() {
 document.addEventListener('DOMContentLoaded', () => {
   startDigitalClock();
   setupHeaderStoreDropdown();
-  if (window.location.pathname.includes('users.html')) {
+  if (window.location.pathname.includes('superadmin-dashboard.html')) {
+    initSuperAdminDashboardPage();
+  } else if (window.location.pathname.includes('users.html')) {
     initUserManagementPage();
   } else if (window.location.pathname.includes('products.html') || window.location.pathname.includes('product-list.html')) {
     initProductsListPage();
