@@ -1705,11 +1705,23 @@ function startDigitalClock() {
     });
   };
   updateClock();
-  setInterval(updateClock, 1000);
+  if (!window._osClockInterval) {
+    window._osClockInterval = setInterval(updateClock, 1000);
+  }
 }
 
-// Auto-run header store dropdown controller, clock & page initializers on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+// Immediate execution helper to handle scripts loaded after DOMContentLoaded
+function runOnDOMReady(fn) {
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(fn, 1);
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
+}
+
+// Execute clock immediately and on ready
+startDigitalClock();
+runOnDOMReady(() => {
   startDigitalClock();
   setupHeaderStoreDropdown();
   if (window.location.pathname.includes('superadmin-dashboard.html')) {
