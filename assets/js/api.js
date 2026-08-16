@@ -412,12 +412,51 @@ function renderCart() {
   if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
 }
 
-/** Dashboard Controller **/
+/** Dashboard & OS Launchpad Controller **/
 async function initDashboardPage() {
-  console.log('Initializing Dashboard Controller...');
+  console.log('Initializing OS Launchpad Dashboard Controller...');
+
+  // 1. Digital Clock
+  function updateClock() {
+    const clockEl = document.getElementById('os-digital-clock');
+    if (!clockEl) return;
+    const now = new Date();
+    clockEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + now.toLocaleTimeString();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // 2. Spotlight Search Filter
+  const spotlightInput = document.getElementById('os-spotlight-input');
+  if (spotlightInput) {
+    spotlightInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const tiles = document.querySelectorAll('.os-app-tile');
+      tiles.forEach(tile => {
+        const keywords = tile.getAttribute('data-app-name') || '';
+        const title = tile.querySelector('.os-app-title')?.textContent || '';
+        if (keywords.toLowerCase().includes(term) || title.toLowerCase().includes(term)) {
+          tile.style.display = 'flex';
+        } else {
+          tile.style.display = 'none';
+        }
+      });
+    });
+
+    // Keyboard shortcut Cmd+K or Ctrl+K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        spotlightInput.focus();
+      }
+    });
+  }
+
+  // 3. Fetch Live Metrics
   try {
     const stats = await API.getStats();
-    const revenueEls = document.querySelectorAll('.total-revenue-val, .total-sales-count');
+
+    const revenueEls = document.querySelectorAll('.total-revenue-val');
     revenueEls.forEach(el => el.textContent = `$${parseFloat(stats.total_revenue).toFixed(2)}`);
 
     const orderEls = document.querySelectorAll('.order-count-val');
@@ -430,6 +469,6 @@ async function initDashboardPage() {
     lowStockEls.forEach(el => el.textContent = stats.low_stock_count);
 
   } catch (err) {
-    console.error('Failed to load dashboard stats:', err);
+    console.error('Failed to load OS Launchpad stats:', err);
   }
 }
