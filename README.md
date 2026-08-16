@@ -1,12 +1,12 @@
-# Dreams POS - Retail POS & Inventory Management System
+# AvocadoPOS - Retail POS & Inventory Management System
 
-**Dreams POS** is a comprehensive, modern, responsive Point of Sale (POS) and Inventory Management web application. Designed for retail stores, warehouses, and multi-location businesses, it provides intuitive interfaces for managing products, tracking sales, handling invoices, managing stock levels, viewing detailed financial analytics, and managing employees.
+**AvocadoPOS** is a comprehensive, modern, responsive Point of Sale (POS) and Inventory Management web application. Designed for retail stores, warehouses, and multi-location businesses, it provides intuitive interfaces for managing products, tracking sales, handling invoices, managing stock levels, viewing detailed financial analytics, and managing employees.
 
 ---
 
 ## 🚀 How to Run the Software from Source Code
 
-Since **Dreams POS** is built as a web application with static assets (HTML5, CSS3, JavaScript, Bootstrap 5), you can easily serve and run it locally on any computer.
+Since **AvocadoPOS** is built as a web application with static assets (HTML5, CSS3, JavaScript, Bootstrap 5), you can easily serve and run it locally on any computer.
 
 ### Prerequisites
 - A modern web browser (**Google Chrome**, **Mozilla Firefox**, **Apple Safari**, or **Microsoft Edge**).
@@ -123,4 +123,4 @@ You can also run the application directly without a web server:
 
 ## 📝 License & Credits
 
-Designed & Developed by **Dreams Technologies**.
+Designed & Developed by **AvocadoPOS**.
