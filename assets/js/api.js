@@ -40,10 +40,10 @@ const API = {
     const bgClass = type === 'success' ? 'bg-success text-white' : 'bg-danger text-white';
     
     const toastHtml = `
-      <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 show mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+      <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 show mb-2 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
           <div class="toast-body fw-bold fs-14">
-            <i class="ti ${type === 'success' ? 'ti-check' : 'ti-alert-circle'} me-2"></i> ${message}
+            <i class="ti ${type === 'success' ? 'ti-check' : 'ti-alert-circle'} me-2 fs-16"></i> ${message}
           </div>
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -54,7 +54,7 @@ const API = {
     setTimeout(() => {
       const el = document.getElementById(toastId);
       if (el) el.remove();
-    }, 4000);
+    }, 4500);
   },
 
   // Products API
@@ -133,11 +133,101 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Setup SKU Generator Button Handler
+function setupSKUGenerator() {
+  const genButtons = document.querySelectorAll('.btn-primaryadd, .generate-sku-btn');
+  genButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const skuInput = document.querySelector('input[name="sku"], .sku-input, input[placeholder*="SKU"]');
+      if (skuInput) {
+        const randomCode = 'AVO-' + Math.floor(100000 + Math.random() * 900000).toString(16).toUpperCase();
+        skuInput.value = randomCode;
+        skuInput.classList.remove('is-invalid', 'border-danger');
+        const feedback = skuInput.parentNode.querySelector('.invalid-feedback-custom');
+        if (feedback) feedback.remove();
+        API.showToast(`Auto-generated SKU: ${randomCode}`);
+      }
+    });
+  });
+}
+
+// Visual Red Field Validation
+function validateProductForm() {
+  let isValid = true;
+
+  // Clear previous errors
+  document.querySelectorAll('.is-invalid, .border-danger').forEach(el => {
+    el.classList.remove('is-invalid', 'border-danger');
+  });
+  document.querySelectorAll('.invalid-feedback-custom').forEach(el => {
+    el.remove();
+  });
+
+  const addFieldError = (el, msg) => {
+    if (!el) return;
+    isValid = false;
+    el.classList.add('is-invalid', 'border-danger');
+    const errDiv = document.createElement('div');
+    errDiv.className = 'invalid-feedback-custom text-danger fw-semibold fs-12 mt-1';
+    errDiv.innerHTML = `<i class="ti ti-alert-circle me-1"></i> ${msg}`;
+    if (el.parentNode) {
+      el.parentNode.appendChild(errDiv);
+    }
+  };
+
+  const nameInput = document.querySelector('input[name="name"], input[placeholder*="Product Name"], .product-name-input');
+  const skuInput = document.querySelector('input[name="sku"], input[placeholder*="SKU"], .sku-input');
+  const catInput = document.querySelector('select[name="category_id"], .category-select');
+  const brandInput = document.querySelector('select[name="brand_id"], .brand-select');
+  const priceInput = document.querySelector('input[name="price"], input[placeholder*="Price"], .price-input');
+  const qtyInput = document.querySelector('input[name="quantity"], input[placeholder*="Quantity"], .qty-input');
+
+  // 1. Product Name Validation
+  if (!nameInput || !nameInput.value.trim()) {
+    addFieldError(nameInput, 'Product Name is required *');
+  }
+
+  // 2. SKU Validation
+  if (skuInput && !skuInput.value.trim()) {
+    skuInput.value = 'AVO-' + Math.floor(100000 + Math.random() * 900000).toString(16).toUpperCase();
+  }
+
+  // 3. Category Validation
+  if (!catInput || !catInput.value) {
+    addFieldError(catInput, 'Please select a Category *');
+  }
+
+  // 4. Brand Validation
+  if (!brandInput || !brandInput.value) {
+    addFieldError(brandInput, 'Please select a Brand *');
+  }
+
+  // 5. Price Validation
+  if (!priceInput || !priceInput.value.trim() || isNaN(parseFloat(priceInput.value)) || parseFloat(priceInput.value) <= 0) {
+    addFieldError(priceInput, 'Please enter a valid Price greater than 0 *');
+  }
+
+  // 6. Quantity Validation
+  if (!qtyInput || !qtyInput.value.trim() || isNaN(parseInt(qtyInput.value)) || parseInt(qtyInput.value) < 0) {
+    addFieldError(qtyInput, 'Please enter a valid Quantity (0 or more) *');
+  }
+
+  if (!isValid) {
+    API.showToast('Missing required fields! Please fill in all red highlighted fields.', 'danger');
+  }
+
+  return isValid;
+}
+
 /** Add Product Page Controller **/
 async function initAddProductPage() {
   console.log('Initializing Add Product Form Controller...');
 
-  // Populate Categories & Brands
+  // Setup SKU Auto Generator
+  setupSKUGenerator();
+
+  // Populate Categories & Brands Dropdowns
   try {
     const categories = await API.getCategories();
     const catSelects = document.querySelectorAll('select[name="category_id"], .category-select');
@@ -169,6 +259,12 @@ async function initAddProductPage() {
   saveButtons.forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+
+      // Validate required fields
+      if (!validateProductForm()) {
+        return;
+      }
+
       btn.classList.add('disabled');
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
@@ -184,14 +280,6 @@ async function initAddProductPage() {
         const descInput = document.querySelector('textarea[name="description"], textarea, .description-input');
         const imageFileInput = document.querySelector('input[type="file"]');
 
-        const name = nameInput ? nameInput.value.trim() : '';
-        if (!name) {
-          API.showToast('Please enter a product name', 'danger');
-          btn.classList.remove('disabled');
-          btn.textContent = 'Save Product';
-          return;
-        }
-
         let imageUrl = 'assets/img/products/product1.jpg';
         if (imageFileInput && imageFileInput.files && imageFileInput.files[0]) {
           try {
@@ -202,13 +290,13 @@ async function initAddProductPage() {
         }
 
         const productData = {
-          name: name,
-          sku: skuInput && skuInput.value.trim() ? skuInput.value.trim() : `AVO-${Math.floor(1000 + Math.random() * 9000)}`,
-          category_id: catInput && catInput.value ? parseInt(catInput.value) : 1,
-          brand_id: brandInput && brandInput.value ? parseInt(brandInput.value) : 1,
-          price: priceInput && parseFloat(priceInput.value) ? parseFloat(priceInput.value) : 9.99,
-          cost_price: costInput && parseFloat(costInput.value) ? parseFloat(costInput.value) : 4.50,
-          quantity: qtyInput && parseInt(qtyInput.value) ? parseInt(qtyInput.value) : 50,
+          name: nameInput.value.trim(),
+          sku: skuInput.value.trim(),
+          category_id: parseInt(catInput.value),
+          brand_id: parseInt(brandInput.value),
+          price: parseFloat(priceInput.value),
+          cost_price: costInput && parseFloat(costInput.value) ? parseFloat(costInput.value) : (parseFloat(priceInput.value) * 0.5),
+          quantity: parseInt(qtyInput.value),
           min_quantity: minQtyInput && parseInt(minQtyInput.value) ? parseInt(minQtyInput.value) : 5,
           unit: 'pc',
           description: descInput ? descInput.value.trim() : '',
@@ -235,6 +323,10 @@ async function initAddProductPage() {
 /** Edit Product Page Controller **/
 async function initEditProductPage() {
   console.log('Initializing Edit Product Controller...');
+
+  // Setup SKU Auto Generator
+  setupSKUGenerator();
+
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('id');
 
@@ -296,6 +388,12 @@ async function initEditProductPage() {
     saveButtons.forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
+
+        // Validate required fields
+        if (!validateProductForm()) {
+          return;
+        }
+
         btn.classList.add('disabled');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
 
@@ -311,14 +409,14 @@ async function initEditProductPage() {
           }
 
           const updatedData = {
-            name: nameInput ? nameInput.value.trim() : product.name,
-            sku: skuInput ? skuInput.value.trim() : product.sku,
-            category_id: catSelect && catSelect.value ? parseInt(catSelect.value) : product.category_id,
-            brand_id: brandSelect && brandSelect.value ? parseInt(brandSelect.value) : product.brand_id,
-            price: priceInput && parseFloat(priceInput.value) ? parseFloat(priceInput.value) : product.price,
+            name: nameInput.value.trim(),
+            sku: skuInput.value.trim(),
+            category_id: parseInt(catSelect.value),
+            brand_id: parseInt(brandSelect.value),
+            price: parseFloat(priceInput.value),
             cost_price: costInput && parseFloat(costInput.value) ? parseFloat(costInput.value) : product.cost_price,
-            quantity: qtyInput && parseInt(qtyInput.value) !== NaN ? parseInt(qtyInput.value) : product.quantity,
-            min_quantity: minQtyInput && parseInt(minQtyInput.value) !== NaN ? parseInt(minQtyInput.value) : product.min_quantity,
+            quantity: parseInt(qtyInput.value),
+            min_quantity: minQtyInput && parseInt(minQtyInput.value) ? parseInt(minQtyInput.value) : product.min_quantity,
             description: descInput ? descInput.value.trim() : product.description,
             image_url: imageUrl
           };
@@ -355,8 +453,6 @@ async function initProductDetailsPage() {
     const product = await API.getProduct(productId);
     console.log('Product Details Loaded:', product);
 
-    // Update Product Name Title Elements
-    const nameEls = document.querySelectorAll('.product-bar h6:first-child, .product-name-title, h4:contains("Macbook")');
     document.querySelectorAll('.productdetails ul.product-bar li').forEach(li => {
       const h4 = li.querySelector('h4');
       const h6 = li.querySelector('h6');
@@ -373,7 +469,6 @@ async function initProductDetailsPage() {
       else if (label === 'description') h6.textContent = product.description || 'No description provided.';
     });
 
-    // Update Product Images
     const imgEls = document.querySelectorAll('.slider-product img, .product-details-img');
     imgEls.forEach(img => {
       img.src = product.image_url;
@@ -522,7 +617,7 @@ async function initPOSPage() {
           API.showToast(`Order ${order.order_number} completed successfully!`);
           posCart = [];
           renderCart();
-          initPOSPage(); // refresh stock counts
+          initPOSPage();
         } catch (err) {
           API.showToast('Checkout failed: ' + err.message, 'danger');
         }
