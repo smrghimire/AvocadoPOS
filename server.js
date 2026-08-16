@@ -84,7 +84,7 @@ async function initDatabase() {
         name TEXT NOT NULL,
         code TEXT UNIQUE NOT NULL,
         status TEXT DEFAULT 'Active',
-        enabled_modules TEXT DEFAULT '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]',
+        enabled_modules TEXT DEFAULT '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -223,9 +223,9 @@ async function seedInitialData() {
   if (orgCount.count === 0) {
     await dbRun(`
       INSERT INTO organizations (id, name, code, status, enabled_modules) VALUES 
-      (1, 'Avocado Global Enterprise', 'ORG-001', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]'),
-      (2, 'FreshMart Retail Group', 'ORG-002', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]'),
-      (3, 'GreenGrocery Supply Co', 'ORG-003', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","reports","settings"]')
+      (1, 'Avocado Global Enterprise', 'ORG-001', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]'),
+      (2, 'FreshMart Retail Group', 'ORG-002', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]'),
+      (3, 'GreenGrocery Supply Co', 'ORG-003', 'Active', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","settings"]')
     `);
     console.log('Sample organizations created.');
   }
@@ -235,73 +235,129 @@ async function seedInitialData() {
     await dbRun(`
       INSERT INTO users (org_id, name, email, password, role, phone, permissions) VALUES 
       (1, 'System Super Admin', 'admin@avocado.com', 'admin123', 'Super Admin', '+1 555-0100', '["*"]'),
-      (1, 'Avocado Enterprise Admin', 'avocado.admin@avocado.com', 'admin123', 'Admin', '+1 555-0101', '["*"]'),
-      (1, 'Avocado Enterprise Manager', 'avocado.manager@avocado.com', 'manager123', 'Manager', '+1 555-0102', '["products","add_product","stocks","alerts","barcodes"]'),
-      (1, 'Avocado Enterprise Staff', 'avocado.staff@avocado.com', 'staff123', 'Staff', '+1 555-0103', '["products","barcodes"]'),
-      (2, 'FreshMart Org Admin', 'freshmart.admin@avocado.com', 'admin123', 'Admin', '+1 555-0200', '["*"]'),
-      (2, 'FreshMart Inventory Manager', 'freshmart.manager@avocado.com', 'manager123', 'Manager', '+1 555-0201', '["products","add_product","stocks","alerts","barcodes"]'),
-      (2, 'FreshMart Stock Staff', 'freshmart.staff@avocado.com', 'staff123', 'Staff', '+1 555-0202', '["products","barcodes"]'),
-      (3, 'GreenGrocery Org Admin', 'greengrocery.admin@avocado.com', 'admin123', 'Admin', '+1 555-0300', '["*"]'),
-      (3, 'GreenGrocery Manager', 'greengrocery.manager@avocado.com', 'manager123', 'Manager', '+1 555-0301', '["products","add_product","stocks","alerts","barcodes"]'),
-      (3, 'GreenGrocery Staff', 'greengrocery.staff@avocado.com', 'staff123', 'Staff', '+1 555-0302', '["products","barcodes"]')
+      (1, 'Avocado Enterprise Admin', 'avocado.admin@avocado.com', 'admin123', 'Admin', '+1 555-0101', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]'),
+      (1, 'Avocado Enterprise Manager', 'avocado.manager@avocado.com', 'manager123', 'Manager', '+1 555-0102', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes"]'),
+      (1, 'Avocado Enterprise Staff', 'avocado.staff@avocado.com', 'staff123', 'Staff', '+1 555-0103', '["products","stocks","alerts","barcodes"]'),
+      (2, 'FreshMart Org Admin', 'freshmart.admin@avocado.com', 'admin123', 'Admin', '+1 555-0200', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]'),
+      (2, 'FreshMart Inventory Manager', 'freshmart.manager@avocado.com', 'manager123', 'Manager', '+1 555-0201', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes"]'),
+      (2, 'FreshMart Stock Staff', 'freshmart.staff@avocado.com', 'staff123', 'Staff', '+1 555-0202', '["products","stocks","alerts","barcodes"]'),
+      (3, 'GreenGrocery Org Admin', 'greengrocery.admin@avocado.com', 'admin123', 'Admin', '+1 555-0300', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","settings"]'),
+      (3, 'GreenGrocery Manager', 'greengrocery.manager@avocado.com', 'manager123', 'Manager', '+1 555-0301', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes"]'),
+      (3, 'GreenGrocery Staff', 'greengrocery.staff@avocado.com', 'staff123', 'Staff', '+1 555-0302', '["products","stocks","alerts","barcodes"]')
     `);
-    console.log('Full multi-tenant user accounts created.');
+    console.log('Full multi-tenant user accounts created across 3 organizations.');
   }
 
   const catCount = await dbGet('SELECT COUNT(*) as count FROM categories');
   if (catCount.count === 0) {
-    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Fruits & Vegetables', 'CAT-001', 'Fresh organic fruits and veggies')");
-    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Beverages', 'CAT-002', 'Cold and hot drinks')");
-    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Bakery', 'CAT-003', 'Fresh bread and bakery goods')");
-    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Groceries', 'CAT-004', 'Daily essentials')");
+    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Fruits & Vegetables', 'CAT-001', 'Fresh organic produce')");
+    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Beverages', 'CAT-002', 'Juices, water, and soft drinks')");
+    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Bakery', 'CAT-003', 'Fresh bread and pastries')");
+    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Dairy & Eggs', 'CAT-004', 'Milk, eggs, and cheese')");
+    await dbRun("INSERT INTO categories (org_id, name, code, description) VALUES (1, 'Pantry & Snacks', 'CAT-005', 'Nuts, oils, and pantry staples')");
   }
 
   const brandCount = await dbGet('SELECT COUNT(*) as count FROM brands');
   if (brandCount.count === 0) {
     await dbRun("INSERT INTO brands (org_id, name) VALUES (1, 'AvocadoFresh')");
+    await dbRun("INSERT INTO brands (org_id, name) VALUES (1, 'FreshMart Choice')");
     await dbRun("INSERT INTO brands (org_id, name) VALUES (1, 'Organic Harvest')");
     await dbRun("INSERT INTO brands (org_id, name) VALUES (1, 'Pure Nature')");
+    await dbRun("INSERT INTO brands (org_id, name) VALUES (1, 'GreenValley')");
   }
 
   const custCount = await dbGet('SELECT COUNT(*) as count FROM customers');
   if (custCount.count === 0) {
-    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (1, 'Walk-in Customer', 'walkin@avocadopos.local', '555-0000', 'Store Storefront')");
-    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (1, 'John Smith', 'john.smith@example.com', '555-0199', '123 Main St')");
-    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (1, 'Sarah Jenkins', 'sarah.j@example.com', '555-0244', '456 Market Rd')");
+    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (1, 'Walk-in Customer', 'walkin@avocado.local', '555-0000', 'Store Front Desk')");
+    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (1, 'Alice Walker', 'alice.w@example.com', '555-0199', '123 Main Street')");
+    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (2, 'Bob Miller', 'bob.m@example.com', '555-0244', '456 Retail Boulevard')");
+    await dbRun("INSERT INTO customers (org_id, name, email, phone, address) VALUES (3, 'Carol Danvers', 'carol.d@example.com', '555-0388', '789 Green Avenue')");
+  }
+
+  const suppCount = await dbGet('SELECT COUNT(*) as count FROM suppliers');
+  if (suppCount.count === 0) {
+    await dbRun("INSERT INTO suppliers (org_id, name, email, phone, company) VALUES (1, 'Global Produce Wholesale', 'contact@globalproduce.com', '555-8001', 'Global Agro Inc')");
+    await dbRun("INSERT INTO suppliers (org_id, name, email, phone, company) VALUES (2, 'FreshMart Direct Logistics', 'orders@freshmartlogistics.com', '555-8002', 'Fresh Supply Chain')");
+    await dbRun("INSERT INTO suppliers (org_id, name, email, phone, company) VALUES (3, 'Eco Farm Co-op', 'info@ecofarmcoop.org', '555-8003', 'Green Farmers Co-op')");
   }
 
   const prodCount = await dbGet('SELECT COUNT(*) as count FROM products');
   if (prodCount.count === 0) {
-    // Org 1 Products
+    // -------------------------------------------------------------
+    // Org 1 Products (10 Trial Items)
+    // -------------------------------------------------------------
     await dbRun(`
-      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url)
-      VALUES 
-      (1, 'Hass Avocado (Pack of 3)', 'AVO-001', 1, 1, 4.99, 2.50, 85, 10, 'pc', 'Fresh ripe Hass avocados', 'assets/img/products/product1.jpg'),
-      (1, 'Organic Banana (Bunch)', 'BAN-002', 1, 2, 2.49, 1.20, 120, 15, 'bunch', 'Organic sweet yellow bananas', 'assets/img/products/product2.jpg'),
-      (1, 'Fresh Orange Juice (1L)', 'JUICE-003', 2, 3, 3.99, 1.80, 45, 5, 'bottle', '100% Cold pressed fresh orange juice', 'assets/img/products/product3.jpg'),
-      (1, 'Whole Grain Wheat Bread', 'BRD-004', 3, 2, 2.99, 1.00, 30, 5, 'loaf', 'Freshly baked whole grain loaf', 'assets/img/products/product4.jpg')
+      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url) VALUES 
+      (1, 'Hass Avocado (Pack of 3)', 'AVO-101', 1, 1, 4.99, 2.50, 85, 10, 'pc', 'Fresh ripe Hass avocados', 'assets/img/products/product1.jpg'),
+      (1, 'Organic Banana (Bunch)', 'AVO-102', 1, 3, 2.49, 1.20, 120, 15, 'bunch', 'Organic sweet yellow bananas', 'assets/img/products/product2.jpg'),
+      (1, 'Cold Pressed Orange Juice (1L)', 'AVO-103', 2, 4, 3.99, 1.80, 45, 5, 'bottle', '100% Cold pressed orange juice', 'assets/img/products/product3.jpg'),
+      (1, 'Whole Grain Wheat Bread', 'AVO-104', 3, 3, 2.99, 1.00, 30, 5, 'loaf', 'Freshly baked whole grain loaf', 'assets/img/products/product4.jpg'),
+      (1, 'Organic Honeycrisp Apples (1kg)', 'AVO-105', 1, 3, 4.49, 2.00, 90, 12, 'kg', 'Crisp sweet Honeycrisp apples', 'assets/img/products/product5.jpg'),
+      (1, 'Almond Milk Unsweetened (1L)', 'AVO-106', 2, 4, 3.29, 1.50, 60, 10, 'carton', 'Pure plant-based almond milk', 'assets/img/products/product6.jpg'),
+      (1, 'Extra Virgin Olive Oil (750ml)', 'AVO-107', 5, 1, 11.99, 6.00, 40, 5, 'bottle', 'First cold pressed olive oil', 'assets/img/products/product7.jpg'),
+      (1, 'Wild Caught Salmon (500g)', 'AVO-108', 5, 4, 14.99, 8.50, 25, 4, 'pack', 'Fresh Atlantic salmon fillets', 'assets/img/products/product8.jpg'),
+      (1, 'Greek Style Plain Yogurt (1kg)', 'AVO-109', 4, 4, 5.99, 3.00, 50, 8, 'tub', 'Probiotic rich Greek yogurt', 'assets/img/products/product9.jpg'),
+      (1, 'Dark Chocolate 85% (100g)', 'AVO-110', 5, 1, 3.79, 1.80, 100, 15, 'bar', 'Single-origin cocoa dark chocolate', 'assets/img/products/product10.jpg')
     `);
 
-    // Org 2 Products
+    // -------------------------------------------------------------
+    // Org 2 Products (10 Trial Items)
+    // -------------------------------------------------------------
     await dbRun(`
-      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url)
-      VALUES 
-      (2, 'FreshMart Crisp Fuji Apples (1kg)', 'FM-101', 1, 1, 3.49, 1.50, 150, 20, 'kg', 'Fresh crisp Fuji apples', 'assets/img/products/product5.jpg'),
-      (2, 'FreshMart Whole Cream Milk (2L)', 'FM-102', 2, 3, 4.29, 2.00, 95, 10, 'bottle', 'Farm fresh whole milk', 'assets/img/products/product6.jpg'),
-      (2, 'FreshMart Artisanal Sourdough', 'FM-103', 3, 2, 4.99, 1.80, 40, 5, 'loaf', 'Artisanal sourdough bread', 'assets/img/products/product7.jpg'),
-      (2, 'FreshMart Roasted Almonds (500g)', 'FM-104', 4, 1, 7.99, 3.50, 60, 10, 'pack', 'Crunchy roasted almonds', 'assets/img/products/product8.jpg')
+      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url) VALUES 
+      (2, 'FreshMart Crisp Fuji Apples (1kg)', 'FM-201', 1, 2, 3.49, 1.50, 150, 20, 'kg', 'Fresh crisp Fuji apples', 'assets/img/products/product5.jpg'),
+      (2, 'FreshMart Whole Cream Milk (2L)', 'FM-202', 4, 2, 4.29, 2.00, 95, 10, 'bottle', 'Farm fresh whole milk', 'assets/img/products/product6.jpg'),
+      (2, 'FreshMart Artisanal Sourdough', 'FM-203', 3, 2, 4.99, 1.80, 40, 5, 'loaf', 'Artisanal sourdough bread', 'assets/img/products/product7.jpg'),
+      (2, 'FreshMart Roasted Almonds (500g)', 'FM-204', 5, 2, 7.99, 3.50, 60, 10, 'pack', 'Crunchy roasted almonds', 'assets/img/products/product8.jpg'),
+      (2, 'FreshMart Grade A Eggs (12pk)', 'FM-205', 4, 2, 4.89, 2.20, 110, 15, 'box', 'Large farm fresh eggs', 'assets/img/products/product9.jpg'),
+      (2, 'FreshMart Baby Spinach (250g)', 'FM-206', 1, 2, 2.19, 0.90, 80, 10, 'pack', 'Washed ready-to-eat spinach', 'assets/img/products/product10.jpg'),
+      (2, 'FreshMart Fresh Strawberries (400g)', 'FM-207', 1, 2, 5.49, 2.50, 45, 6, 'box', 'Sweet ripe strawberries', 'assets/img/products/product1.jpg'),
+      (2, 'FreshMart Sharp Cheddar (250g)', 'FM-208', 4, 2, 4.79, 2.10, 70, 8, 'block', 'Aged sharp cheddar cheese', 'assets/img/products/product2.jpg'),
+      (2, 'FreshMart Lime Sparkling Water (6pk)', 'FM-209', 2, 2, 6.29, 3.00, 85, 12, 'pack', 'Refreshing sparkling water cans', 'assets/img/products/product3.jpg'),
+      (2, 'FreshMart Espresso Coffee Beans (500g)', 'FM-210', 5, 2, 12.49, 6.00, 35, 5, 'bag', 'Medium dark roasted espresso beans', 'assets/img/products/product4.jpg')
     `);
 
-    // Org 3 Products
+    // -------------------------------------------------------------
+    // Org 3 Products (10 Trial Items)
+    // -------------------------------------------------------------
     await dbRun(`
-      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url)
-      VALUES 
-      (3, 'GreenGrocery Organic Kale (Bunch)', 'GG-201', 1, 2, 2.99, 1.00, 75, 10, 'bunch', 'Fresh organic kale greens', 'assets/img/products/product9.jpg'),
-      (3, 'GreenGrocery Free Range Eggs (12pk)', 'GG-202', 4, 3, 5.49, 2.80, 110, 15, 'box', 'Grade A free range eggs', 'assets/img/products/product10.jpg'),
-      (3, 'GreenGrocery Wildflower Honey (500g)', 'GG-203', 4, 2, 8.99, 4.00, 50, 8, 'jar', '100% Raw wildflower honey', 'assets/img/products/product11.jpg')
+      INSERT INTO products (org_id, name, sku, category_id, brand_id, price, cost_price, quantity, min_quantity, unit, description, image_url) VALUES 
+      (3, 'GreenGrocery Organic Kale (Bunch)', 'GG-301', 1, 5, 2.99, 1.00, 75, 10, 'bunch', 'Fresh organic kale greens', 'assets/img/products/product9.jpg'),
+      (3, 'GreenGrocery Free Range Eggs (12pk)', 'GG-302', 4, 5, 5.49, 2.80, 110, 15, 'box', 'Grade A free range eggs', 'assets/img/products/product10.jpg'),
+      (3, 'GreenGrocery Wildflower Honey (500g)', 'GG-303', 5, 5, 8.99, 4.00, 50, 8, 'jar', '100% Raw wildflower honey', 'assets/img/products/product11.jpg'),
+      (3, 'GreenGrocery Sweet Carrots (1kg)', 'GG-304', 1, 5, 2.29, 0.90, 130, 15, 'kg', 'Farm fresh sweet carrots', 'assets/img/products/product1.jpg'),
+      (3, 'GreenGrocery Pure Avocado Oil (500ml)', 'GG-305', 5, 5, 10.99, 5.50, 30, 5, 'bottle', 'Expeller pressed avocado oil', 'assets/img/products/product2.jpg'),
+      (3, 'GreenGrocery Whole Rolled Oats (1kg)', 'GG-306', 5, 5, 3.89, 1.50, 95, 12, 'bag', '100% Whole grain rolled oats', 'assets/img/products/product3.jpg'),
+      (3, 'GreenGrocery Fresh Blueberries (250g)', 'GG-307', 1, 5, 4.99, 2.20, 40, 6, 'pack', 'Antioxidant rich blueberries', 'assets/img/products/product4.jpg'),
+      (3, 'GreenGrocery Vine Tomatoes (1kg)', 'GG-308', 1, 5, 3.19, 1.20, 85, 10, 'kg', 'Juicy ripe vine tomatoes', 'assets/img/products/product5.jpg'),
+      (3, 'GreenGrocery Green Tea Bags (50pk)', 'GG-309', 2, 5, 5.29, 2.00, 65, 8, 'box', 'Organic Japanese green tea', 'assets/img/products/product6.jpg'),
+      (3, 'GreenGrocery Whole Brown Rice (1kg)', 'GG-310', 5, 5, 4.19, 1.80, 70, 10, 'bag', 'Nutritious whole brown rice', 'assets/img/products/product7.jpg')
     `);
 
-    console.log('Sample seed products created across organizations.');
+    console.log('Full trial products (10 per organization) created successfully.');
+  }
+
+  // -------------------------------------------------------------
+  // Seed Trial Orders per Organization for Dashboard Analytics
+  // -------------------------------------------------------------
+  const orderCount = await dbGet('SELECT COUNT(*) as count FROM orders');
+  if (orderCount.count === 0) {
+    // Org 1 Orders
+    await dbRun("INSERT INTO orders (id, org_id, order_number, customer_id, total_amount, payment_method, status) VALUES (1, 1, 'ORD-1001', 1, 14.97, 'Cash', 'Completed')");
+    await dbRun("INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, subtotal) VALUES (1, 1, 'Hass Avocado (Pack of 3)', 4.99, 3, 14.97)");
+
+    await dbRun("INSERT INTO orders (id, org_id, order_number, customer_id, total_amount, payment_method, status) VALUES (2, 1, 'ORD-1002', 2, 15.98, 'Card', 'Completed')");
+    await dbRun("INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, subtotal) VALUES (2, 3, 'Cold Pressed Orange Juice (1L)', 3.99, 4, 15.98)");
+
+    // Org 2 Orders
+    await dbRun("INSERT INTO orders (id, org_id, order_number, customer_id, total_amount, payment_method, status) VALUES (3, 2, 'ORD-2001', 3, 23.97, 'Card', 'Completed')");
+    await dbRun("INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, subtotal) VALUES (3, 14, 'FreshMart Roasted Almonds (500g)', 7.99, 3, 23.97)");
+
+    // Org 3 Orders
+    await dbRun("INSERT INTO orders (id, org_id, order_number, customer_id, total_amount, payment_method, status) VALUES (4, 3, 'ORD-3001', 4, 17.98, 'Cash', 'Completed')");
+    await dbRun("INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, subtotal) VALUES (4, 23, 'GreenGrocery Wildflower Honey (500g)', 8.99, 2, 17.98)");
+
+    console.log('Sample trial orders and order items created across organizations.');
   }
 }
 
@@ -335,7 +391,6 @@ app.post('/api/auth/login', async (req, res) => {
 // Middleware to enforce strict Super Admin access on platform endpoints
 function requireSuperAdmin(req, res, next) {
   const reqRole = req.headers['x-user-role'];
-  // If x-user-role is explicitly sent and is not Super Admin, block access
   if (reqRole && reqRole !== 'Super Admin') {
     return res.status(403).json({ error: 'Access Denied: Super Admin privileges required for platform management' });
   }
@@ -367,7 +422,7 @@ app.post('/api/organizations', async (req, res) => {
       return res.status(400).json({ error: 'Organization name, code, admin email and password are required' });
     }
 
-    const modulesJson = JSON.stringify(enabled_modules || ["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","reports","admin_panel","settings"]);
+    const modulesJson = JSON.stringify(enabled_modules || ["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]);
     
     const result = await dbRun(
       'INSERT INTO organizations (name, code, enabled_modules) VALUES (?, ?, ?)',
@@ -378,7 +433,7 @@ app.post('/api/organizations', async (req, res) => {
     // Create Org Admin User
     await dbRun(
       'INSERT INTO users (org_id, name, email, password, role, permissions) VALUES (?, ?, ?, ?, ?, ?)',
-      [orgId, admin_name || (name + ' Admin'), admin_email.trim().toLowerCase(), admin_password, 'Admin', '["*"]']
+      [orgId, admin_name || (name + ' Admin'), admin_email.trim().toLowerCase(), admin_password, 'Admin', '["products","add_product","categories","brands","stocks","alerts","warehouses","suppliers","barcodes","users","reports","admin_panel","settings"]']
     );
 
     const createdOrg = await dbGet('SELECT * FROM organizations WHERE id = ?', [orgId]);
@@ -449,7 +504,7 @@ app.post('/api/users', async (req, res) => {
       return res.status(400).json({ error: 'Name, email, password and role are required' });
     }
 
-    const permJson = JSON.stringify(permissions || ["products","add_product"]);
+    const permJson = JSON.stringify(permissions || ["products","add_product","stocks","alerts","barcodes"]);
     const result = await dbRun(
       'INSERT INTO users (org_id, name, email, password, role, phone, permissions) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [org_id || reqOrgId, name.trim(), email.trim().toLowerCase(), password, role, phone || '', permJson]
