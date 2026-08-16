@@ -111,14 +111,21 @@ const API = {
 document.addEventListener('DOMContentLoaded', () => {
   const currentPath = window.location.pathname;
 
+  // Always initialize Digital Clock & Launchpad stats if element exists
+  if (document.getElementById('os-digital-clock')) {
+    initDashboardPage();
+  }
+
   if (currentPath.includes('add-product.html')) {
     initAddProductPage();
   } else if (currentPath.includes('products.html') || currentPath.includes('product-list.html')) {
     initProductsListPage();
   } else if (currentPath.includes('pos.html')) {
     initPOSPage();
-  } else if (currentPath.includes('index.html') || currentPath.includes('admin-dashboard.html')) {
-    initDashboardPage();
+  } else if (currentPath === '/' || currentPath === '' || currentPath.includes('index.html') || currentPath.includes('admin-dashboard.html')) {
+    if (!document.getElementById('os-digital-clock')) {
+      initDashboardPage();
+    }
   }
 });
 
