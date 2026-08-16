@@ -7,11 +7,18 @@ const API = {
 
   async request(endpoint, options = {}) {
     try {
+      let currentUser = null;
+      try { currentUser = JSON.parse(localStorage.getItem('avocado_user') || 'null'); } catch(e){}
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-org-id': currentUser ? currentUser.org_id : 1,
+        'x-user-role': currentUser ? currentUser.role : (localStorage.getItem('avocado_role') || 'Super Admin'),
+        ...options.headers
+      };
+
       const response = await fetch(this.baseUrl + endpoint, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
+        headers,
         ...options
       });
       const data = await response.json();
